@@ -44,7 +44,7 @@ class MoenClient:
         # Set headers to match the working curl command exactly
         headers = {
             "Accept": "*/*",
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/json",
             "Accept-Language": "en-US,en;q=0.9",
             "Accept-Encoding": "gzip, deflate, br",
             "User-Agent": "Smartwater-iOS-prod-3.39.0",
@@ -52,22 +52,17 @@ class MoenClient:
         }
 
         try:
-            # Try the exact format from the curl command
+            # Send JSON directly as the body
             import json
-            import urllib.parse
-
+            
             # Create the JSON payload string exactly like the curl command
             json_string = json.dumps(json_payload)
             _LOGGER.debug("JSON payload: %s", json_string)
-
-            # Try sending as form data with payload parameter
-            payload_data = f"payload={urllib.parse.quote(json_string)}"
-            _LOGGER.debug("Final payload data: %s", payload_data)
-
+            
             response = self.session.post(
-                login_url,
-                data=payload_data,
-                headers=headers,
+                login_url, 
+                data=json_string, 
+                headers=headers, 
                 timeout=30
             )
 
