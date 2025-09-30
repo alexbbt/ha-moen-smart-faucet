@@ -89,14 +89,15 @@ class MoenClient:
                     _LOGGER.info("Successfully logged in to Moen API at %s", login_url)
                     return data
                 else:
-                    _LOGGER.error("No access_token in response from %s", login_url)
-                    _LOGGER.error("Response data: %s", data)
+                    _LOGGER.error("No access_token in response from %s. Response data: %s", login_url, data)
                     return None
             else:
-                _LOGGER.error("Login failed with status %s for endpoint: %s", response.status_code, login_url)
-                _LOGGER.error("Response text: %s", response.text)
-                _LOGGER.error("Request headers sent: %s", dict(response.request.headers))
-                _LOGGER.error("Request body sent: %s", response.request.body)
+                _LOGGER.error(
+                    "Login failed with status %s for endpoint: %s. Response: %s. "
+                    "Request headers: %s. Request body: %s",
+                    response.status_code, login_url, response.text,
+                    dict(response.request.headers), response.request.body
+                )
                 return None
 
         except requests.exceptions.RequestException as err:
@@ -113,12 +114,12 @@ class MoenClient:
             return result
 
         # If login fails, raise an error with technical details
-        _LOGGER.error("Login failed. Technical details:")
-        _LOGGER.error("API endpoint: %s", f"{API_BASE}/oauth2/token")
-        _LOGGER.error("Client ID: %s", self.client_id)
-        _LOGGER.error("Username: %s", self.username)
-        _LOGGER.error("This suggests the request format still doesn't match the working curl command")
-        _LOGGER.error("Check the debug logs above for the exact payload being sent")
+        _LOGGER.error(
+            "Login failed - API endpoint: %s, Client ID: %s, Username: %s. "
+            "This suggests the request format still doesn't match the working curl command. "
+            "Check debug logs above for exact payload being sent.",
+            f"{API_BASE}/oauth2/token", self.client_id, self.username
+        )
 
         raise requests.exceptions.RequestException("Login failed")
 
