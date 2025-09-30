@@ -86,7 +86,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     async def get_device_status(call: ServiceCall) -> None:
         """Service to get device status."""
         device_id = call.data["device_id"]
-        
+
         # Find the client for this device
         client = None
         for entry_id, entry_client in hass.data.get("moen_faucet", {}).items():
@@ -95,17 +95,17 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                 if any(device.get("id", device.get("device_id")) == device_id for device in devices):
                     client = entry_client
                     break
-        
+
         if not client:
             _LOGGER.error("Device %s not found in any configured Moen Faucet integration", device_id)
             return
-        
+
         try:
             status = await hass.async_add_executor_job(client.get_device_status, device_id)
             _LOGGER.info("Device %s status: %s", device_id, status)
         except Exception as err:
             _LOGGER.error("Failed to get status for device %s: %s", device_id, err)
-    
+
     async def get_user_profile(call: ServiceCall) -> None:
         """Service to get user profile."""
         # Find any client (they all have the same user profile)
@@ -114,11 +114,11 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             if isinstance(entry_client, MoenClient):
                 client = entry_client
                 break
-        
+
         if not client:
             _LOGGER.error("No Moen Faucet integration found")
             return
-        
+
         try:
             profile = await hass.async_add_executor_job(client.get_user_profile)
             _LOGGER.info("User profile: %s", profile)
@@ -146,7 +146,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         get_device_status,
         schema=GET_STATUS_SERVICE_SCHEMA,
     )
-    
+
     hass.services.async_register(
         "moen_faucet",
         "get_user_profile",

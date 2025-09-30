@@ -30,18 +30,18 @@ class MoenClient:
 
     def _try_login_endpoint(self, base_url: str) -> dict[str, Any]:
         """Try to login to a specific endpoint."""
-        # Use form-encoded data as shown in the working curl command
-        payload = {
+        # Create JSON payload as shown in the working curl command
+        json_payload = {
             "client_id": self.client_id,
             "username": self.username,
             "password": self.password,
         }
-
+        
         # Use the correct OAuth2 token endpoint
         login_url = f"{base_url}/oauth2/token"
         _LOGGER.debug("Attempting login to %s with client_id: %s", login_url, self.client_id)
 
-        # Set headers to match the working curl command
+        # Set headers to match the working curl command exactly
         headers = {
             "Accept": "*/*",
             "Content-Type": "application/x-www-form-urlencoded",
@@ -52,7 +52,18 @@ class MoenClient:
         }
 
         try:
-            response = self.session.post(login_url, data=payload, headers=headers, timeout=30)
+            # Use data-urlencode format like the curl command
+            import json
+            payload_data = {
+                "payload": json.dumps(json_payload)
+            }
+            
+            response = self.session.post(
+                login_url, 
+                data=payload_data, 
+                headers=headers, 
+                timeout=30
+            )
 
             # Log response details for debugging
             _LOGGER.debug("Login response status: %s", response.status_code)
@@ -113,22 +124,22 @@ class MoenClient:
     def get_user_profile(self) -> dict[str, Any]:
         """Get user profile information."""
         self.ensure_auth()
-        
+
         if not self.token:
             _LOGGER.error("No valid authentication token available")
             raise requests.exceptions.RequestException("No valid authentication token")
-        
+
         try:
             profile_url = f"{API_BASE}/users/me"
             _LOGGER.debug("Getting user profile from %s", profile_url)
-            
+
             response = self.session.get(profile_url, timeout=30)
             response.raise_for_status()
-            
+
             profile = response.json()
             _LOGGER.info("Retrieved user profile for %s", profile.get("email", "unknown"))
             return profile
-            
+
         except requests.exceptions.RequestException as err:
             _LOGGER.error("Failed to get user profile: %s", err)
             raise
@@ -136,12 +147,12 @@ class MoenClient:
     def list_devices(self) -> list[dict[str, Any]]:
         """Get list of devices from the API."""
         self.ensure_auth()
-        
+
         # Check if we have a valid token
         if not self.token:
             _LOGGER.error("No valid authentication token available")
             raise requests.exceptions.RequestException("No valid authentication token")
-        
+
         # Try different device paths based on the API pattern
         device_paths = [
             "/devices",
@@ -150,14 +161,14 @@ class MoenClient:
             "/v1/devices",
             "/prod/devices",
         ]
-        
+
         for path in device_paths:
             try:
                 devices_url = f"{API_BASE}{path}"
                 _LOGGER.debug("Attempting to get devices from %s with token: %s...", devices_url, self.token[:10])
-                
+
                 response = self.session.get(devices_url, timeout=30)
-                
+
                 if response.status_code == 403:
                     _LOGGER.warning("403 Forbidden for devices endpoint: %s", devices_url)
                     _LOGGER.warning("This suggests the authentication token is invalid or expired")
@@ -182,7 +193,7 @@ class MoenClient:
                     continue
                 elif response.status_code == 200:
                     devices = response.json()
-                    
+
                     # Cache devices for later use
                     self._devices = devices
                     _LOGGER.info("Retrieved %d devices from Moen API at %s", len(devices), devices_url)
@@ -190,11 +201,11 @@ class MoenClient:
                 else:
                     _LOGGER.debug("Unexpected status code %s for devices endpoint: %s", response.status_code, devices_url)
                     response.raise_for_status()
-                    
+
             except requests.exceptions.RequestException as err:
                 _LOGGER.debug("Request failed for devices endpoint %s: %s", devices_url, err)
                 continue
-        
+
         # If all paths fail, raise an error
         _LOGGER.error("All device endpoints failed - this usually means authentication is not working")
         raise requests.exceptions.RequestException("All device endpoints failed - check authentication")
