@@ -55,19 +55,19 @@ class MoenClient:
             # Try the exact format from the curl command
             import json
             import urllib.parse
-            
+
             # Create the JSON payload string exactly like the curl command
             json_string = json.dumps(json_payload)
             _LOGGER.debug("JSON payload: %s", json_string)
-            
+
             # Try sending as form data with payload parameter
             payload_data = f"payload={urllib.parse.quote(json_string)}"
             _LOGGER.debug("Final payload data: %s", payload_data)
-            
+
             response = self.session.post(
-                login_url, 
-                data=payload_data, 
-                headers=headers, 
+                login_url,
+                data=payload_data,
+                headers=headers,
                 timeout=30
             )
 
@@ -95,6 +95,8 @@ class MoenClient:
             else:
                 _LOGGER.error("Login failed with status %s for endpoint: %s", response.status_code, login_url)
                 _LOGGER.error("Response text: %s", response.text)
+                _LOGGER.error("Request headers sent: %s", dict(response.request.headers))
+                _LOGGER.error("Request body sent: %s", response.request.body)
                 return None
 
         except requests.exceptions.RequestException as err:
@@ -110,14 +112,13 @@ class MoenClient:
         if result:
             return result
 
-        # If login fails, raise an error
-        _LOGGER.error("Login failed. This usually means:")
-        _LOGGER.error("1. Your credentials are incorrect")
-        _LOGGER.error("2. The client_id is not valid")
-        _LOGGER.error("3. The API structure has changed")
-        _LOGGER.error("Current client_id: %s", self.client_id)
-        _LOGGER.error("Current username: %s", self.username)
+        # If login fails, raise an error with technical details
+        _LOGGER.error("Login failed. Technical details:")
         _LOGGER.error("API endpoint: %s", f"{API_BASE}/oauth2/token")
+        _LOGGER.error("Client ID: %s", self.client_id)
+        _LOGGER.error("Username: %s", self.username)
+        _LOGGER.error("This suggests the request format still doesn't match the working curl command")
+        _LOGGER.error("Check the debug logs above for the exact payload being sent")
 
         raise requests.exceptions.RequestException("Login failed")
 
