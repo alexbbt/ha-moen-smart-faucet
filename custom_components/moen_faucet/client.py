@@ -36,7 +36,7 @@ class MoenClient:
             "username": self.username,
             "password": self.password,
         }
-        
+
         # Use the correct OAuth2 token endpoint
         login_url = f"{base_url}/oauth2/token"
         _LOGGER.debug("Attempting login to %s with client_id: %s", login_url, self.client_id)
@@ -52,11 +52,17 @@ class MoenClient:
         }
 
         try:
-            # Use data-urlencode format like the curl command
+            # Try the exact format from the curl command
             import json
-            payload_data = {
-                "payload": json.dumps(json_payload)
-            }
+            import urllib.parse
+            
+            # Create the JSON payload string exactly like the curl command
+            json_string = json.dumps(json_payload)
+            _LOGGER.debug("JSON payload: %s", json_string)
+            
+            # Try sending as form data with payload parameter
+            payload_data = f"payload={urllib.parse.quote(json_string)}"
+            _LOGGER.debug("Final payload data: %s", payload_data)
             
             response = self.session.post(
                 login_url, 
