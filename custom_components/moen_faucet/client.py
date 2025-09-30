@@ -54,15 +54,15 @@ class MoenClient:
         try:
             # Send JSON directly as the body
             import json
-            
+
             # Create the JSON payload string exactly like the curl command
             json_string = json.dumps(json_payload)
             _LOGGER.debug("JSON payload: %s", json_string)
-            
+
             response = self.session.post(
-                login_url, 
-                data=json_string, 
-                headers=headers, 
+                login_url,
+                data=json_string,
+                headers=headers,
                 timeout=30
             )
 
@@ -141,6 +141,7 @@ class MoenClient:
 
             profile = response.json()
             _LOGGER.info("Retrieved user profile for %s", profile.get("email", "unknown"))
+            _LOGGER.debug("User profile data: %s", profile)
             return profile
 
         except requests.exceptions.RequestException as err:
@@ -150,20 +151,45 @@ class MoenClient:
     def list_devices(self) -> list[dict[str, Any]]:
         """Get list of devices from the API."""
         self.ensure_auth()
-
+        
         # Check if we have a valid token
         if not self.token:
             _LOGGER.error("No valid authentication token available")
             raise requests.exceptions.RequestException("No valid authentication token")
-
+        
+        # First try to get user profile to see if we can find account-specific endpoints
+        try:
+            profile = self.get_user_profile()
+            account_id = profile.get("account", {}).get("id")
+            if account_id:
+                _LOGGER.info("Found account ID: %s", account_id)
+        except Exception as err:
+            _LOGGER.debug("Could not get user profile: %s", err)
+            account_id = None
+        
         # Try different device paths based on the API pattern
         device_paths = [
             "/devices",
-            "/users/me/devices",
+            "/users/me/devices", 
             "/api/devices",
             "/v1/devices",
             "/prod/devices",
+            "/accounts/devices",
+            "/user/devices",
+            "/my/devices",
+            "/device/list",
+            "/devices/list",
+            "/api/v1/devices",
+            "/v1/api/devices",
         ]
+        
+        # Add account-specific paths if we have an account ID
+        if account_id:
+            device_paths.extend([
+                f"/accounts/{account_id}/devices",
+                f"/account/{account_id}/devices",
+                f"/users/{account_id}/devices",
+            ])
 
         for path in device_paths:
             try:
