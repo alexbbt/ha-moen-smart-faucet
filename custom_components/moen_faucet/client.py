@@ -10,7 +10,15 @@ import requests
 _LOGGER = logging.getLogger(__name__)
 
 # API endpoints - these will need to be updated with actual values from network capture
+# Primary endpoint from network capture
 API_BASE = "https://exo9f857n8.execute-api.us-east-2.amazonaws.com/prod"
+
+# Alternative endpoints that might work
+ALTERNATIVE_ENDPOINTS = [
+    "https://exo9f857n8.execute-api.us-east-2.amazonaws.com",
+    "https://api.moen.com",
+    "https://api.ubymoen.com",
+]
 
 
 class MoenClient:
@@ -26,33 +34,67 @@ class MoenClient:
         self.expiry = 0.0
         self._devices: list[dict[str, Any]] | None = None
 
-    def login(self) -> dict[str, Any]:
-        """Login to the Moen API and get access token."""
+    def _try_login_endpoint(self, base_url: str) -> dict[str, Any]:
+        """Try to login to a specific endpoint."""
         payload = {
             "client_id": self.client_id,
             "username": self.username,
             "password": self.password,
         }
+        
+        login_url = f"{base_url}/auth/login"
+        _LOGGER.debug("Attempting login to %s with client_id: %s", login_url, self.client_id)
+        
+        response = self.session.post(login_url, json=payload, timeout=30)
+        
+        # Log response details for debugging
+        _LOGGER.debug("Login response status: %s", response.status_code)
+        _LOGGER.debug("Login response headers: %s", dict(response.headers))
+        
+        if response.status_code == 403:
+            _LOGGER.warning("403 Forbidden for endpoint: %s", login_url)
+            return None
+            
+        response.raise_for_status()
+        data = response.json()
+        
+        self.token = data["access_token"]
+        # Set expiry with 60 second buffer
+        self.expiry = time.time() + data.get("expires_in", 3600) - 60
+        self.session.headers.update({"Authorization": f"Bearer {self.token}"})
+        
+        _LOGGER.info("Successfully logged in to Moen API at %s", base_url)
+        return data
 
+    def login(self) -> dict[str, Any]:
+        """Login to the Moen API and get access token."""
+        # Try primary endpoint first
         try:
-            response = self.session.post(f"{API_BASE}/auth/login", json=payload, timeout=30)
-            response.raise_for_status()
-            data = response.json()
-
-            self.token = data["access_token"]
-            # Set expiry with 60 second buffer
-            self.expiry = time.time() + data.get("expires_in", 3600) - 60
-            self.session.headers.update({"Authorization": f"Bearer {self.token}"})
-
-            _LOGGER.info("Successfully logged in to Moen API")
-            return data
-
+            return self._try_login_endpoint(API_BASE)
         except requests.exceptions.RequestException as err:
-            _LOGGER.error("Failed to login to Moen API: %s", err)
-            raise
-        except KeyError as err:
-            _LOGGER.error("Invalid response from Moen API login: %s", err)
-            raise
+            _LOGGER.warning("Primary endpoint failed: %s", err)
+            
+        # Try alternative endpoints
+        for endpoint in ALTERNATIVE_ENDPOINTS:
+            try:
+                _LOGGER.info("Trying alternative endpoint: %s", endpoint)
+                result = self._try_login_endpoint(endpoint)
+                if result:
+                    return result
+            except requests.exceptions.RequestException as err:
+                _LOGGER.warning("Alternative endpoint %s failed: %s", endpoint, err)
+                continue
+        
+        # If all endpoints fail, raise the original error
+        _LOGGER.error("All API endpoints failed. This usually means:")
+        _LOGGER.error("1. The API endpoints are incorrect")
+        _LOGGER.error("2. The client_id is not valid")
+        _LOGGER.error("3. The API structure has changed")
+        _LOGGER.error("4. Your credentials are incorrect")
+        _LOGGER.error("Current client_id: %s", self.client_id)
+        _LOGGER.error("Tried endpoints: %s", [API_BASE] + ALTERNATIVE_ENDPOINTS)
+        
+        raise requests.exceptions.RequestException("All API endpoints failed")
 
     def ensure_auth(self) -> None:
         """Ensure we have a valid authentication token."""
