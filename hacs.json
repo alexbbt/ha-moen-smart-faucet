@@ -1,0 +1,9 @@
+{
+  "name": "Moen Smart Faucet (Unofficial)",
+  "content_in_root": false,
+  "filename": "moen_faucet",
+  "country": ["US", "CA"],
+  "homeassistant": "2023.1.0",
+  "render_readme": true,
+  "iot_class": "Cloud Polling"
+}
