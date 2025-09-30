@@ -1,0 +1,12 @@
+{
+  "domain": "moen_faucet",
+  "name": "Moen Smart Faucet (Unofficial)",
+  "version": "0.1.0",
+  "requirements": ["requests>=2.28.0"],
+  "dependencies": [],
+  "codeowners": ["@alexbbt"],
+  "iot_class": "cloud_polling",
+  "config_flow": true,
+  "documentation": "https://github.com/alexbbt/ha-moen-smart-faucet",
+  "issue_tracker": "https://github.com/alexbbt/ha-moen-smart-faucet/issues"
+}
