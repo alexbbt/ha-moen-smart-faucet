@@ -43,15 +43,27 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     try:
         # Test the connection
         await hass.async_add_executor_job(client.login)
-
-        # Get devices to verify the connection works
-        devices = await hass.async_add_executor_job(client.list_devices)
-
-        if not devices:
-            raise InvalidAuth("No devices found for this account")
-
-        return {"title": f"Moen Faucet ({len(devices)} devices)"}
-
+        
+        # Test the /users/me endpoint to verify authentication works
+        user_profile = await hass.async_add_executor_job(client.get_user_profile)
+        _LOGGER.info("Successfully authenticated and retrieved user profile: %s", user_profile.get("email", "unknown"))
+        
+        # Try to get devices to see if we can find any
+        try:
+            devices = await hass.async_add_executor_job(client.list_devices)
+            device_count = len(devices) if devices else 0
+            _LOGGER.info("Found %d devices", device_count)
+        except Exception as device_err:
+            _LOGGER.warning("Could not retrieve devices, but authentication works: %s", device_err)
+            devices = []
+            device_count = 0
+            
+        return {
+            "title": f"Moen Faucet ({user_profile.get('firstName', 'User')} - {device_count} devices)",
+            "user_profile": user_profile,
+            "device_count": device_count
+        }
+        
     except Exception as err:
         _LOGGER.error("Failed to validate Moen API connection: %s", err)
         if "401" in str(err) or "unauthorized" in str(err).lower():

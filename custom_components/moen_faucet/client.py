@@ -151,12 +151,12 @@ class MoenClient:
     def list_devices(self) -> list[dict[str, Any]]:
         """Get list of devices from the API."""
         self.ensure_auth()
-        
+
         # Check if we have a valid token
         if not self.token:
             _LOGGER.error("No valid authentication token available")
             raise requests.exceptions.RequestException("No valid authentication token")
-        
+
         # First try to get user profile to see if we can find account-specific endpoints
         try:
             profile = self.get_user_profile()
@@ -166,11 +166,11 @@ class MoenClient:
         except Exception as err:
             _LOGGER.debug("Could not get user profile: %s", err)
             account_id = None
-        
+
         # Try different device paths based on the API pattern
         device_paths = [
             "/devices",
-            "/users/me/devices", 
+            "/users/me/devices",
             "/api/devices",
             "/v1/devices",
             "/prod/devices",
@@ -182,7 +182,7 @@ class MoenClient:
             "/api/v1/devices",
             "/v1/api/devices",
         ]
-        
+
         # Add account-specific paths if we have an account ID
         if account_id:
             device_paths.extend([
