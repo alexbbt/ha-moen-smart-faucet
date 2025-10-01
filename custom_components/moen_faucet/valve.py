@@ -1,0 +1,212 @@
+"""Valve platform for Moen Faucet integration."""
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+from homeassistant.components.valve import ValveEntity, ValveEntityFeature
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
+from .coordinator import MoenDataUpdateCoordinator
+
+_LOGGER = logging.getLogger(__name__)
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up Moen Faucet valve entities."""
+    coordinator: MoenDataUpdateCoordinator = hass.data["moen_faucet"][config_entry.entry_id]
+
+    # Get devices and create entities for each
+    devices = coordinator.get_all_devices()
+
+    entities = []
+    for device_id, device in devices.items():
+        device_name = device.get("name", f"Moen Faucet {device_id}")
+        entities.append(MoenFaucetValve(coordinator, device_id, device_name))
+
+    async_add_entities(entities)
+
+
+class MoenFaucetValve(CoordinatorEntity, ValveEntity):
+    """Valve entity for Moen Faucet water control."""
+
+    def __init__(
+        self,
+        coordinator: MoenDataUpdateCoordinator,
+        device_id: str,
+        device_name: str
+    ) -> None:
+        """Initialize the valve entity."""
+        super().__init__(coordinator)
+        self._device_id = device_id
+        self._device_name = device_name
+        self._attr_unique_id = f"{device_id}_valve"
+        self._attr_name = "Water Control"
+        self._attr_has_entity_name = True
+
+        # Valve features
+        self._attr_supported_features = (
+            ValveEntityFeature.OPEN |
+            ValveEntityFeature.CLOSE |
+            ValveEntityFeature.SET_VALVE_POSITION |
+            ValveEntityFeature.STOP
+        )
+
+        # Valve state
+        self._attr_is_closed = True
+        self._attr_is_opening = False
+        self._attr_is_closing = False
+        self._attr_valve_position = 0  # 0-100 for flow rate
+
+        # Additional attributes for temperature and status
+        self._attr_temperature = 20.0
+        self._attr_preset_mode = "coldest"
+        self._attr_extra_state_attributes = {}
+
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device information."""
+        return {
+            "identifiers": {("moen_faucet", self._device_id)},
+            "name": self._device_name,
+            "manufacturer": "Moen",
+            "model": "Smart Faucet",
+        }
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        shadow = self.coordinator.get_device_shadow(self._device_id)
+        if shadow:
+            state = shadow.get("state", {}).get("reported", {})
+
+            # Update valve state based on command
+            command = state.get("command", "stop")
+            if command == "run":
+                self._attr_is_closed = False
+                self._attr_is_opening = False
+                self._attr_is_closing = False
+            elif command == "stop":
+                self._attr_is_closed = True
+                self._attr_is_opening = False
+                self._attr_is_closing = False
+
+            # Update valve position (flow rate)
+            self._attr_valve_position = state.get("flowRate", 0)
+
+            # Update temperature
+            self._attr_temperature = state.get("temperature", 20.0)
+
+            # Update extra state attributes
+            self._attr_extra_state_attributes.update({
+                "last_dispense_volume": state.get("lastDispenseVolume", 0),
+                "command": command,
+                "flow_rate": self._attr_valve_position,
+                "temperature": self._attr_temperature,
+            })
+
+        self.async_write_ha_state()
+
+    async def async_open_valve(self, **kwargs: Any) -> None:
+        """Open the valve (start water flow)."""
+        try:
+            await self.hass.async_add_executor_job(
+                self.coordinator.api.start_water_flow,
+                self._device_id,
+                self._attr_preset_mode,
+                int(self._attr_valve_position)
+            )
+            self._attr_is_closed = False
+            self._attr_is_opening = True
+            _LOGGER.info("Opened valve for device %s", self._device_id)
+        except Exception as err:
+            _LOGGER.error("Failed to open valve for device %s: %s", self._device_id, err)
+
+    async def async_close_valve(self, **kwargs: Any) -> None:
+        """Close the valve (stop water flow)."""
+        try:
+            await self.hass.async_add_executor_job(
+                self.coordinator.api.stop_water_flow,
+                self._device_id
+            )
+            self._attr_is_closed = True
+            self._attr_is_closing = True
+            _LOGGER.info("Closed valve for device %s", self._device_id)
+        except Exception as err:
+            _LOGGER.error("Failed to close valve for device %s: %s", self._device_id, err)
+
+    async def async_stop_valve(self, **kwargs: Any) -> None:
+        """Stop the valve (same as close for faucet)."""
+        await self.async_close_valve(**kwargs)
+
+    async def async_set_valve_position(self, position: float) -> None:
+        """Set the valve position (flow rate 0-100)."""
+        try:
+            # Update flow rate
+            await self.hass.async_add_executor_job(
+                self.coordinator.api.set_flow_rate,
+                self._device_id,
+                int(position)
+            )
+            self._attr_valve_position = position
+            _LOGGER.info("Set valve position to %d%% for device %s", int(position), self._device_id)
+        except Exception as err:
+            _LOGGER.error("Failed to set valve position for device %s: %s", self._device_id, err)
+
+    async def async_set_temperature(self, temperature: float) -> None:
+        """Set the water temperature."""
+        try:
+            await self.hass.async_add_executor_job(
+                self.coordinator.api.set_specific_temperature,
+                self._device_id,
+                temperature,
+                int(self._attr_valve_position)
+            )
+            self._attr_temperature = temperature
+            _LOGGER.info("Set temperature to %.1f°C for device %s", temperature, self._device_id)
+        except Exception as err:
+            _LOGGER.error("Failed to set temperature for device %s: %s", self._device_id, err)
+
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
+        """Set the temperature preset mode."""
+        try:
+            # Map preset modes to API calls
+            if preset_mode == "coldest":
+                await self.hass.async_add_executor_job(
+                    self.coordinator.api.set_coldest,
+                    self._device_id,
+                    int(self._attr_valve_position)
+                )
+            elif preset_mode == "hottest":
+                await self.hass.async_add_executor_job(
+                    self.coordinator.api.set_hottest,
+                    self._device_id,
+                    int(self._attr_valve_position)
+                )
+            elif preset_mode == "warm":
+                await self.hass.async_add_executor_job(
+                    self.coordinator.api.set_warm,
+                    self._device_id,
+                    int(self._attr_valve_position)
+                )
+
+            self._attr_preset_mode = preset_mode
+            _LOGGER.info("Set preset mode to %s for device %s", preset_mode, self._device_id)
+        except Exception as err:
+            _LOGGER.error("Failed to set preset mode for device %s: %s", self._device_id, err)
+
+    @property
+    def preset_modes(self) -> list[str]:
+        """Return the available preset modes."""
+        return ["coldest", "cold", "warm", "hot", "hottest"]
+
+    @property
+    def current_option(self) -> str:
+        """Return the current preset mode."""
+        return self._attr_preset_mode
