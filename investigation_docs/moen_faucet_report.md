@@ -1,7 +1,7 @@
 # Reverse-engineering Moen / U by Moen Faucet for Home Assistant Integration
 
 ## Executive summary
-Your faucet uses **AWS IoT (MQTT over TLS, port 8883)** with **mutual TLS** (device presents a client certificate), and the official **mobile app** talks to **AWS API Gateway** endpoints (observed host: `*.execute-api.us-east-2.amazonaws.com`) to send commands.  
+Your faucet uses **AWS IoT (MQTT over TLS, port 8883)** with **mutual TLS** (device presents a client certificate), and the official **mobile app** talks to **AWS API Gateway** endpoints (observed host: `*.execute-api.us-east-2.amazonaws.com`) to send commands.
 Local impersonation is not practical. The recommended path is to reproduce the **app→cloud API calls** (login → token → command).
 
 ---
@@ -146,4 +146,3 @@ class MoenClient:
 6. Document usage and cautions.
 
 ---
-
