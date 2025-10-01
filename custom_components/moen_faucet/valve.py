@@ -172,12 +172,12 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             self._attr_is_opening = False
             self._attr_is_closed = False
             self.async_write_ha_state()
-            
+
             await self.hass.async_add_executor_job(
                 self.coordinator.api.stop_water_flow,
                 self._device_id
             )
-            
+
             # After successful API call, valve is now closed
             self._attr_is_closing = False
             self._attr_is_closed = True

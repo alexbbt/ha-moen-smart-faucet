@@ -15,8 +15,6 @@ from .services import async_setup_services
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [
-    Platform.BUTTON,
-    Platform.NUMBER,
     Platform.SENSOR,
     Platform.SELECT,
     Platform.VALVE,

@@ -34,8 +34,6 @@ async def async_setup_entry(
             MoenFaucetStateSensor(coordinator, device_id, device_name),
             MoenLastDispenseVolumeSensor(coordinator, device_id, device_name),
             MoenCloudConnectedSensor(coordinator, device_id, device_name),
-            MoenTemperatureSensor(coordinator, device_id, device_name),
-            MoenFlowRateSensor(coordinator, device_id, device_name),
         ])
 
     async_add_entities(entities)
@@ -130,43 +128,3 @@ class MoenCloudConnectedSensor(MoenSensorBase):
         self.async_write_ha_state()
 
 
-class MoenTemperatureSensor(MoenSensorBase):
-    """Sensor for current water temperature."""
-
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
-        """Initialize the temperature sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_temperature"
-        self._attr_name = "Temperature"
-        self._attr_native_unit_of_measurement = "°C"
-        self._attr_native_value = 0
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            # Extract temperature from shadow data
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = state.get("temperature", 0)
-        self.async_write_ha_state()
-
-
-class MoenFlowRateSensor(MoenSensorBase):
-    """Sensor for current flow rate."""
-
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
-        """Initialize the flow rate sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_flow_rate"
-        self._attr_name = "Flow Rate"
-        self._attr_native_unit_of_measurement = "%"
-        self._attr_native_value = 0
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            # Extract flow rate from shadow data
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = state.get("flowRate", 0)
-        self.async_write_ha_state()
