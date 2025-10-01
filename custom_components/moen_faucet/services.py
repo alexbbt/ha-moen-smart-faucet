@@ -43,6 +43,7 @@ SET_FLOW_RATE_SERVICE_SCHEMA = vol.Schema({
 
 async def async_setup_services(hass: HomeAssistant) -> None:
     """Set up the services for Moen Faucet integration."""
+    _LOGGER.info("Setting up Moen Faucet services")
 
     async def dispense_water(call: ServiceCall) -> None:
         """Service to dispense water from the faucet."""
@@ -188,44 +189,50 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             _LOGGER.error("Failed to set flow rate for device %s: %s", device_id, err)
 
     # Register services
-    hass.services.async_register(
-        "moen_faucet",
-        "dispense_water",
-        dispense_water,
-        schema=DISPENSE_SERVICE_SCHEMA,
-    )
+    try:
+        hass.services.async_register(
+            "moen_faucet",
+            "dispense_water",
+            dispense_water,
+            schema=DISPENSE_SERVICE_SCHEMA,
+        )
 
-    hass.services.async_register(
-        "moen_faucet",
-        "stop_dispensing",
-        stop_dispensing,
-        schema=STOP_DISPENSE_SERVICE_SCHEMA,
-    )
+        hass.services.async_register(
+            "moen_faucet",
+            "stop_dispensing",
+            stop_dispensing,
+            schema=STOP_DISPENSE_SERVICE_SCHEMA,
+        )
 
-    hass.services.async_register(
-        "moen_faucet",
-        "get_device_status",
-        get_device_status,
-        schema=GET_STATUS_SERVICE_SCHEMA,
-    )
+        hass.services.async_register(
+            "moen_faucet",
+            "get_device_status",
+            get_device_status,
+            schema=GET_STATUS_SERVICE_SCHEMA,
+        )
 
-    hass.services.async_register(
-        "moen_faucet",
-        "get_user_profile",
-        get_user_profile,
-        schema=GET_USER_PROFILE_SERVICE_SCHEMA,
-    )
+        hass.services.async_register(
+            "moen_faucet",
+            "get_user_profile",
+            get_user_profile,
+            schema=GET_USER_PROFILE_SERVICE_SCHEMA,
+        )
 
-    hass.services.async_register(
-        "moen_faucet",
-        "set_temperature",
-        set_temperature,
-        schema=SET_TEMPERATURE_SERVICE_SCHEMA,
-    )
+        hass.services.async_register(
+            "moen_faucet",
+            "set_temperature",
+            set_temperature,
+            schema=SET_TEMPERATURE_SERVICE_SCHEMA,
+        )
 
-    hass.services.async_register(
-        "moen_faucet",
-        "set_flow_rate",
-        set_flow_rate,
-        schema=SET_FLOW_RATE_SERVICE_SCHEMA,
-    )
+        hass.services.async_register(
+            "moen_faucet",
+            "set_flow_rate",
+            set_flow_rate,
+            schema=SET_FLOW_RATE_SERVICE_SCHEMA,
+        )
+        
+        _LOGGER.info("Successfully registered all Moen Faucet services")
+    except Exception as err:
+        _LOGGER.error("Failed to register Moen Faucet services: %s", err)
+        raise
