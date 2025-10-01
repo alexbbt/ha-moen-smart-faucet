@@ -1,0 +1,84 @@
+"""Data update coordinator for Moen Faucet integration."""
+from __future__ import annotations
+
+import logging
+from datetime import timedelta
+from typing import Any
+
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+from .api import MoenAPI
+
+_LOGGER = logging.getLogger(__name__)
+
+# Polling interval - update every 30 seconds
+SCAN_INTERVAL = timedelta(seconds=30)
+
+
+class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+    """Class to manage fetching data from the Moen API."""
+
+    def __init__(self, hass: HomeAssistant, api: MoenAPI, entry: ConfigEntry) -> None:
+        """Initialize the coordinator."""
+        self.api = api
+        self.entry = entry
+        self._devices: dict[str, dict[str, Any]] = {}
+        self._device_shadows: dict[str, dict[str, Any]] = {}
+
+        super().__init__(
+            hass,
+            _LOGGER,
+            name="moen_faucet",
+            update_interval=SCAN_INTERVAL,
+        )
+
+    async def _async_update_data(self) -> dict[str, Any]:
+        """Update data via library."""
+        try:
+            # Get fresh device list
+            devices = await self.hass.async_add_executor_job(self.api.get_cached_devices)
+
+            # Update device cache
+            self._devices = {device.get("clientId", device.get("id", "")): device for device in devices}
+
+            # Get device shadows for all devices
+            device_shadows = {}
+            for device_id in self._devices.keys():
+                try:
+                    shadow = await self.hass.async_add_executor_job(
+                        self.api.get_device_shadow, device_id
+                    )
+                    device_shadows[device_id] = shadow
+                except Exception as err:
+                    _LOGGER.warning("Failed to get shadow for device %s: %s", device_id, err)
+                    # Use empty shadow if we can't get it
+                    device_shadows[device_id] = {}
+
+            self._device_shadows = device_shadows
+
+            return {
+                "devices": self._devices,
+                "device_shadows": self._device_shadows,
+            }
+
+        except Exception as err:
+            _LOGGER.error("Error communicating with Moen API: %s", err)
+            raise UpdateFailed(f"Error communicating with Moen API: {err}") from err
+
+    def get_device(self, device_id: str) -> dict[str, Any] | None:
+        """Get device data by ID."""
+        return self._devices.get(device_id)
+
+    def get_device_shadow(self, device_id: str) -> dict[str, Any] | None:
+        """Get device shadow data by ID."""
+        return self._device_shadows.get(device_id)
+
+    def get_all_devices(self) -> dict[str, dict[str, Any]]:
+        """Get all devices."""
+        return self._devices
+
+    def get_all_device_shadows(self) -> dict[str, dict[str, Any]]:
+        """Get all device shadows."""
+        return self._device_shadows

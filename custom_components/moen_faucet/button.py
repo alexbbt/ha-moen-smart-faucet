@@ -9,7 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .api import MoenAPI
+from .coordinator import MoenDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,22 +20,21 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Moen Faucet button entities."""
-    api: MoenAPI = hass.data["moen_faucet"][config_entry.entry_id]
+    coordinator: MoenDataUpdateCoordinator = hass.data["moen_faucet"][config_entry.entry_id]
 
     # Get devices and create entities for each
-    devices = await hass.async_add_executor_job(api.get_cached_devices)
+    devices = coordinator.get_all_devices()
 
     entities = []
-    for device in devices:
-        device_id = device.get("clientId", device.get("id", device.get("device_id")))
+    for device_id, device in devices.items():
         device_name = device.get("name", f"Moen Faucet {device_id}")
 
         entities.extend([
-            MoenStartDispenseButton(api, device_id, device_name),
-            MoenStopDispenseButton(api, device_id, device_name),
-            MoenColdestButton(api, device_id, device_name),
-            MoenHottestButton(api, device_id, device_name),
-            MoenWarmButton(api, device_id, device_name),
+            MoenStartDispenseButton(coordinator, device_id, device_name),
+            MoenStopDispenseButton(coordinator, device_id, device_name),
+            MoenColdestButton(coordinator, device_id, device_name),
+            MoenHottestButton(coordinator, device_id, device_name),
+            MoenWarmButton(coordinator, device_id, device_name),
         ])
 
     async_add_entities(entities)
@@ -44,9 +43,9 @@ async def async_setup_entry(
 class MoenButtonBase(ButtonEntity):
     """Base class for Moen button entities."""
 
-    def __init__(self, api: MoenAPI, device_id: str, device_name: str) -> None:
+    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
         """Initialize the button."""
-        self._api = api
+        self._coordinator = coordinator
         self._device_id = device_id
         self._device_name = device_name
         self._attr_has_entity_name = True
@@ -65,9 +64,9 @@ class MoenButtonBase(ButtonEntity):
 class MoenStartDispenseButton(MoenButtonBase):
     """Button to start dispensing water."""
 
-    def __init__(self, api: MoenAPI, device_id: str, device_name: str) -> None:
+    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
         """Initialize the start dispense button."""
-        super().__init__(api, device_id, device_name)
+        super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_start_dispense"
         self._attr_name = "Start Dispense"
 
@@ -75,7 +74,7 @@ class MoenStartDispenseButton(MoenButtonBase):
         """Handle the button press."""
         try:
             await self.hass.async_add_executor_job(
-                self._api.start_water_flow, self._device_id
+                self._coordinator.api.start_water_flow, self._device_id
             )
             _LOGGER.info("Started dispensing on device %s", self._device_id)
         except Exception as err:
@@ -85,9 +84,9 @@ class MoenStartDispenseButton(MoenButtonBase):
 class MoenStopDispenseButton(MoenButtonBase):
     """Button to stop dispensing water."""
 
-    def __init__(self, api: MoenAPI, device_id: str, device_name: str) -> None:
+    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
         """Initialize the stop dispense button."""
-        super().__init__(api, device_id, device_name)
+        super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_stop_dispense"
         self._attr_name = "Stop Dispense"
 
@@ -95,7 +94,7 @@ class MoenStopDispenseButton(MoenButtonBase):
         """Handle the button press."""
         try:
             await self.hass.async_add_executor_job(
-                self._api.stop_water_flow, self._device_id
+                self._coordinator.api.stop_water_flow, self._device_id
             )
             _LOGGER.info("Stopped dispensing on device %s", self._device_id)
         except Exception as err:
@@ -105,9 +104,9 @@ class MoenStopDispenseButton(MoenButtonBase):
 class MoenColdestButton(MoenButtonBase):
     """Button to set water to coldest temperature."""
 
-    def __init__(self, api: MoenAPI, device_id: str, device_name: str) -> None:
+    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
         """Initialize the coldest button."""
-        super().__init__(api, device_id, device_name)
+        super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_coldest"
         self._attr_name = "Coldest"
 
@@ -115,7 +114,7 @@ class MoenColdestButton(MoenButtonBase):
         """Handle the button press."""
         try:
             await self.hass.async_add_executor_job(
-                self._api.set_coldest, self._device_id
+                self._coordinator.api.set_coldest, self._device_id
             )
             _LOGGER.info("Set coldest temperature on device %s", self._device_id)
         except Exception as err:
@@ -125,9 +124,9 @@ class MoenColdestButton(MoenButtonBase):
 class MoenHottestButton(MoenButtonBase):
     """Button to set water to hottest temperature."""
 
-    def __init__(self, api: MoenAPI, device_id: str, device_name: str) -> None:
+    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
         """Initialize the hottest button."""
-        super().__init__(api, device_id, device_name)
+        super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_hottest"
         self._attr_name = "Hottest"
 
@@ -135,7 +134,7 @@ class MoenHottestButton(MoenButtonBase):
         """Handle the button press."""
         try:
             await self.hass.async_add_executor_job(
-                self._api.set_hottest, self._device_id
+                self._coordinator.api.set_hottest, self._device_id
             )
             _LOGGER.info("Set hottest temperature on device %s", self._device_id)
         except Exception as err:
@@ -145,9 +144,9 @@ class MoenHottestButton(MoenButtonBase):
 class MoenWarmButton(MoenButtonBase):
     """Button to set water to warm temperature."""
 
-    def __init__(self, api: MoenAPI, device_id: str, device_name: str) -> None:
+    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
         """Initialize the warm button."""
-        super().__init__(api, device_id, device_name)
+        super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_warm"
         self._attr_name = "Warm"
 
@@ -155,7 +154,7 @@ class MoenWarmButton(MoenButtonBase):
         """Handle the button press."""
         try:
             await self.hass.async_add_executor_job(
-                self._api.set_warm, self._device_id
+                self._coordinator.api.set_warm, self._device_id
             )
             _LOGGER.info("Set warm temperature on device %s", self._device_id)
         except Exception as err:

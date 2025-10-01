@@ -8,7 +8,7 @@ import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 
-from .api import MoenAPI
+from .coordinator import MoenDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,22 +50,22 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         volume_ml = call.data["volume_ml"]
         timeout = call.data["timeout"]
 
-        # Find the API client for this device
-        api = None
-        for entry_id, entry_api in hass.data.get("moen_faucet", {}).items():
-            if isinstance(entry_api, MoenAPI):
-                devices = await hass.async_add_executor_job(entry_api.get_cached_devices)
-                if any(device.get("clientId", device.get("id", device.get("device_id"))) == device_id for device in devices):
-                    api = entry_api
+        # Find the coordinator for this device
+        coordinator = None
+        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+            if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
+                devices = entry_coordinator.get_all_devices()
+                if device_id in devices:
+                    coordinator = entry_coordinator
                     break
 
-        if not api:
+        if not coordinator:
             _LOGGER.error("Device %s not found in any configured Moen Faucet integration", device_id)
             return
 
         try:
             await hass.async_add_executor_job(
-                api.start_water_flow, device_id, "coldest", 100
+                coordinator.api.start_water_flow, device_id, "coldest", 100
             )
             _LOGGER.info("Started dispensing from device %s", device_id)
         except Exception as err:
@@ -75,21 +75,21 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         """Service to stop dispensing water from the faucet."""
         device_id = call.data["device_id"]
 
-        # Find the API client for this device
-        api = None
-        for entry_id, entry_api in hass.data.get("moen_faucet", {}).items():
-            if isinstance(entry_api, MoenAPI):
-                devices = await hass.async_add_executor_job(entry_api.get_cached_devices)
-                if any(device.get("clientId", device.get("id", device.get("device_id"))) == device_id for device in devices):
-                    api = entry_api
+        # Find the coordinator for this device
+        coordinator = None
+        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+            if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
+                devices = entry_coordinator.get_all_devices()
+                if device_id in devices:
+                    coordinator = entry_coordinator
                     break
 
-        if not api:
+        if not coordinator:
             _LOGGER.error("Device %s not found in any configured Moen Faucet integration", device_id)
             return
 
         try:
-            await hass.async_add_executor_job(api.stop_water_flow, device_id)
+            await hass.async_add_executor_job(coordinator.api.stop_water_flow, device_id)
             _LOGGER.info("Stopped dispensing from device %s", device_id)
         except Exception as err:
             _LOGGER.error("Failed to stop dispensing from device %s: %s", device_id, err)
@@ -98,40 +98,40 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         """Service to get device status."""
         device_id = call.data["device_id"]
 
-        # Find the API client for this device
-        api = None
-        for entry_id, entry_api in hass.data.get("moen_faucet", {}).items():
-            if isinstance(entry_api, MoenAPI):
-                devices = await hass.async_add_executor_job(entry_api.get_cached_devices)
-                if any(device.get("clientId", device.get("id", device.get("device_id"))) == device_id for device in devices):
-                    api = entry_api
+        # Find the coordinator for this device
+        coordinator = None
+        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+            if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
+                devices = entry_coordinator.get_all_devices()
+                if device_id in devices:
+                    coordinator = entry_coordinator
                     break
 
-        if not api:
+        if not coordinator:
             _LOGGER.error("Device %s not found in any configured Moen Faucet integration", device_id)
             return
 
         try:
-            shadow = await hass.async_add_executor_job(api.get_device_shadow, device_id)
+            shadow = coordinator.get_device_shadow(device_id)
             _LOGGER.info("Device %s shadow: %s", device_id, shadow)
         except Exception as err:
             _LOGGER.error("Failed to get status for device %s: %s", device_id, err)
 
     async def get_user_profile(call: ServiceCall) -> None:
         """Service to get user profile."""
-        # Find any API client (they all have the same user profile)
-        api = None
-        for entry_id, entry_api in hass.data.get("moen_faucet", {}).items():
-            if isinstance(entry_api, MoenAPI):
-                api = entry_api
+        # Find any coordinator (they all have the same user profile)
+        coordinator = None
+        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+            if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
+                coordinator = entry_coordinator
                 break
 
-        if not api:
+        if not coordinator:
             _LOGGER.error("No Moen Faucet integration found")
             return
 
         try:
-            profile = await hass.async_add_executor_job(api.get_user_profile)
+            profile = await hass.async_add_executor_job(coordinator.api.get_user_profile)
             _LOGGER.info("User profile: %s", profile)
         except Exception as err:
             _LOGGER.error("Failed to get user profile: %s", err)
@@ -142,22 +142,22 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         temperature = call.data["temperature"]
         flow_rate = call.data["flow_rate"]
 
-        # Find the API client for this device
-        api = None
-        for entry_id, entry_api in hass.data.get("moen_faucet", {}).items():
-            if isinstance(entry_api, MoenAPI):
-                devices = await hass.async_add_executor_job(entry_api.get_cached_devices)
-                if any(device.get("clientId", device.get("id", device.get("device_id"))) == device_id for device in devices):
-                    api = entry_api
+        # Find the coordinator for this device
+        coordinator = None
+        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+            if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
+                devices = entry_coordinator.get_all_devices()
+                if device_id in devices:
+                    coordinator = entry_coordinator
                     break
 
-        if not api:
+        if not coordinator:
             _LOGGER.error("Device %s not found in any configured Moen Faucet integration", device_id)
             return
 
         try:
             await hass.async_add_executor_job(
-                api.set_specific_temperature, device_id, temperature, flow_rate
+                coordinator.api.set_specific_temperature, device_id, temperature, flow_rate
             )
             _LOGGER.info("Set temperature to %.1f°C for device %s", temperature, device_id)
         except Exception as err:
@@ -168,21 +168,21 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         device_id = call.data["device_id"]
         flow_rate = call.data["flow_rate"]
 
-        # Find the API client for this device
-        api = None
-        for entry_id, entry_api in hass.data.get("moen_faucet", {}).items():
-            if isinstance(entry_api, MoenAPI):
-                devices = await hass.async_add_executor_job(entry_api.get_cached_devices)
-                if any(device.get("clientId", device.get("id", device.get("device_id"))) == device_id for device in devices):
-                    api = entry_api
+        # Find the coordinator for this device
+        coordinator = None
+        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+            if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
+                devices = entry_coordinator.get_all_devices()
+                if device_id in devices:
+                    coordinator = entry_coordinator
                     break
 
-        if not api:
+        if not coordinator:
             _LOGGER.error("Device %s not found in any configured Moen Faucet integration", device_id)
             return
 
         try:
-            await hass.async_add_executor_job(api.set_flow_rate, device_id, flow_rate)
+            await hass.async_add_executor_job(coordinator.api.set_flow_rate, device_id, flow_rate)
             _LOGGER.info("Set flow rate to %d%% for device %s", flow_rate, device_id)
         except Exception as err:
             _LOGGER.error("Failed to set flow rate for device %s: %s", device_id, err)

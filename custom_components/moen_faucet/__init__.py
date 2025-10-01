@@ -9,6 +9,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
 from .api import MoenAPI
+from .coordinator import MoenDataUpdateCoordinator
 from .services import async_setup_services
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,19 +37,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await hass.async_add_executor_job(api.login)
         user_profile = await hass.async_add_executor_job(api.get_user_profile)
         _LOGGER.info("Successfully connected to Moen API for user: %s", user_profile.get("email", "unknown"))
-
-        # Get devices to create device entities
-        devices = await hass.async_add_executor_job(api.list_devices)
-        _LOGGER.info("Found %d Moen faucet devices", len(devices))
-
-        # Store devices in the API client for later use
-        api._devices = devices
     except Exception as err:
         _LOGGER.error("Failed to connect to Moen API: %s", err)
         return False
 
-    # Store the API client in hass data
-    hass.data["moen_faucet"][entry.entry_id] = api
+    # Create coordinator for data updates
+    coordinator = MoenDataUpdateCoordinator(hass, api, entry)
+
+    # Fetch initial data
+    await coordinator.async_config_entry_first_refresh()
+
+    # Store the coordinator in hass data
+    hass.data["moen_faucet"][entry.entry_id] = coordinator
 
     # Forward the setup to the platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
