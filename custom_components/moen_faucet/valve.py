@@ -80,7 +80,7 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
         self._attr_temperature = 20.0
         self._attr_preset_mode = "coldest"
         self._attr_extra_state_attributes = {}
-        
+
         # Device information
         self._attr_device_info = DeviceInfo(
             identifiers={("moen_faucet", device_id)},

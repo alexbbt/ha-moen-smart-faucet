@@ -128,5 +128,3 @@ class MoenCloudConnectedSensor(MoenSensorBase):
         else:
             self._attr_native_value = "disconnected"
         self.async_write_ha_state()
-
-
