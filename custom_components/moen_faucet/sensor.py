@@ -37,6 +37,12 @@ async def async_setup_entry(
             MoenFaucetStateSensor(coordinator, device_id, device_name),
             MoenLastDispenseVolumeSensor(coordinator, device_id, device_name),
             MoenCloudConnectedSensor(coordinator, device_id, device_name),
+            MoenTemperatureSensor(coordinator, device_id, device_name),
+            MoenFlowRateSensor(coordinator, device_id, device_name),
+            # Debug sensors
+            MoenDeviceShadowSensor(coordinator, device_id, device_name),
+            MoenApiStatusSensor(coordinator, device_id, device_name),
+            MoenLastUpdateSensor(coordinator, device_id, device_name),
         ])
 
     _LOGGER.info("Adding %d sensor entities", len(entities))
@@ -127,4 +133,118 @@ class MoenCloudConnectedSensor(MoenSensorBase):
             self._attr_native_value = "connected"
         else:
             self._attr_native_value = "disconnected"
+        self.async_write_ha_state()
+
+
+class MoenTemperatureSensor(MoenSensorBase):
+    """Sensor for current water temperature."""
+
+    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+        """Initialize the temperature sensor."""
+        super().__init__(coordinator, device_id, device_name)
+        self._attr_unique_id = f"{device_id}_temperature"
+        self._attr_name = "Temperature"
+        self._attr_native_unit_of_measurement = "°C"
+        self._attr_native_value = 20.0
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        shadow = self.coordinator.get_device_shadow(self._device_id)
+        if shadow:
+            # Extract temperature from shadow data
+            state = shadow.get("state", {}).get("reported", {})
+            self._attr_native_value = state.get("temperature", 20.0)
+        self.async_write_ha_state()
+
+
+class MoenFlowRateSensor(MoenSensorBase):
+    """Sensor for current flow rate."""
+
+    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+        """Initialize the flow rate sensor."""
+        super().__init__(coordinator, device_id, device_name)
+        self._attr_unique_id = f"{device_id}_flow_rate"
+        self._attr_name = "Flow Rate"
+        self._attr_native_unit_of_measurement = "%"
+        self._attr_native_value = 0
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        shadow = self.coordinator.get_device_shadow(self._device_id)
+        if shadow:
+            # Extract flow rate from shadow data
+            state = shadow.get("state", {}).get("reported", {})
+            self._attr_native_value = state.get("flowRate", 0)
+        self.async_write_ha_state()
+
+
+class MoenDeviceShadowSensor(MoenSensorBase):
+    """Debug sensor for device shadow data."""
+
+    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+        """Initialize the device shadow sensor."""
+        super().__init__(coordinator, device_id, device_name)
+        self._attr_unique_id = f"{device_id}_device_shadow"
+        self._attr_name = "Device Shadow"
+        self._attr_native_value = "unknown"
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        shadow = self.coordinator.get_device_shadow(self._device_id)
+        if shadow:
+            # Show a summary of the shadow data
+            state = shadow.get("state", {}).get("reported", {})
+            command = state.get("command", "unknown")
+            temperature = state.get("temperature", 0)
+            flow_rate = state.get("flowRate", 0)
+            self._attr_native_value = f"cmd:{command} temp:{temperature} flow:{flow_rate}"
+        else:
+            self._attr_native_value = "no_data"
+        self.async_write_ha_state()
+
+
+class MoenApiStatusSensor(MoenSensorBase):
+    """Debug sensor for API status."""
+
+    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+        """Initialize the API status sensor."""
+        super().__init__(coordinator, device_id, device_name)
+        self._attr_unique_id = f"{device_id}_api_status"
+        self._attr_name = "API Status"
+        self._attr_native_value = "unknown"
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        # Check if coordinator has data
+        if self.coordinator.data:
+            devices = self.coordinator.data.get("devices", {})
+            device_shadows = self.coordinator.data.get("device_shadows", {})
+            
+            if self._device_id in devices and self._device_id in device_shadows:
+                self._attr_native_value = "connected"
+            elif self._device_id in devices:
+                self._attr_native_value = "device_found_no_shadow"
+            else:
+                self._attr_native_value = "device_not_found"
+        else:
+            self._attr_native_value = "no_data"
+        self.async_write_ha_state()
+
+
+class MoenLastUpdateSensor(MoenSensorBase):
+    """Debug sensor for last update time."""
+
+    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+        """Initialize the last update sensor."""
+        super().__init__(coordinator, device_id, device_name)
+        self._attr_unique_id = f"{device_id}_last_update"
+        self._attr_name = "Last Update"
+        self._attr_native_value = "never"
+
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        if self.coordinator.last_update_success:
+            self._attr_native_value = self.coordinator.last_update_time.isoformat()
+        else:
+            self._attr_native_value = "failed"
         self.async_write_ha_state()
