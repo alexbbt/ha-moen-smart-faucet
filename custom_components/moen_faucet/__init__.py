@@ -36,7 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await hass.async_add_executor_job(client.login)
         user_profile = await hass.async_add_executor_job(client.get_user_profile)
         _LOGGER.info("Successfully connected to Moen API for user: %s", user_profile.get("email", "unknown"))
-        
+
         # Store user profile in the client for later use
         client._user_profile = user_profile
     except Exception as err:
