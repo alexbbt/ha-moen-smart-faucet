@@ -143,3 +143,4 @@ secrets.yaml
 test_credentials.json
 network_capture.pcap
 mitmproxy_logs/
+scripts/moen_credentials.json

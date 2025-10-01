@@ -1,0 +1,2 @@
+# Requirements for the Moen API test script
+requests>=2.28.0
