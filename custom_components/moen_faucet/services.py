@@ -231,7 +231,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             set_flow_rate,
             schema=SET_FLOW_RATE_SERVICE_SCHEMA,
         )
-        
+
         _LOGGER.info("Successfully registered all Moen Faucet services")
     except Exception as err:
         _LOGGER.error("Failed to register Moen Faucet services: %s", err)
