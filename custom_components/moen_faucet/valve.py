@@ -7,6 +7,7 @@ from typing import Any
 from homeassistant.components.valve import ValveEntity, ValveEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -25,12 +26,15 @@ async def async_setup_entry(
 
     # Get devices and create entities for each
     devices = coordinator.get_all_devices()
+    _LOGGER.info("Setting up valve entities. Found %d devices: %s", len(devices), list(devices.keys()))
 
     entities = []
     for device_id, device in devices.items():
         device_name = device.get("name", f"Moen Faucet {device_id}")
+        _LOGGER.info("Creating valve entity for device %s: %s", device_id, device_name)
         entities.append(MoenFaucetValve(coordinator, device_id, device_name))
 
+    _LOGGER.info("Adding %d valve entities", len(entities))
     async_add_entities(entities)
 
 
@@ -76,16 +80,14 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
         self._attr_temperature = 20.0
         self._attr_preset_mode = "coldest"
         self._attr_extra_state_attributes = {}
-
-    @property
-    def device_info(self) -> dict[str, Any]:
-        """Return device information."""
-        return {
-            "identifiers": {("moen_faucet", self._device_id)},
-            "name": self._device_name,
-            "manufacturer": "Moen",
-            "model": "Smart Faucet",
-        }
+        
+        # Device information
+        self._attr_device_info = DeviceInfo(
+            identifiers={("moen_faucet", device_id)},
+            name=device_name,
+            manufacturer="Moen",
+            model="Smart Faucet",
+        )
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""

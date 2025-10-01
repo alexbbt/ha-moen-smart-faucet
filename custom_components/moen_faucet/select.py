@@ -7,6 +7,7 @@ from typing import Any
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -50,6 +51,14 @@ class MoenTemperatureSelect(CoordinatorEntity, SelectEntity):
         self._attr_unique_id = f"{device_id}_temperature_preset"
         self._attr_name = "Temperature Preset"
         self._attr_has_entity_name = True
+        
+        # Device information
+        self._attr_device_info = DeviceInfo(
+            identifiers={("moen_faucet", device_id)},
+            name=device_name,
+            manufacturer="Moen",
+            model="Smart Faucet",
+        )
 
         # Available options
         self._attr_options = [
