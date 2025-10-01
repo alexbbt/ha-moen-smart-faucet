@@ -9,7 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .client import MoenClient
+from .api import MoenAPI
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,17 +20,21 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Moen Faucet number entities."""
-    client: MoenClient = hass.data["moen_faucet"][config_entry.entry_id]
+    api: MoenAPI = hass.data["moen_faucet"][config_entry.entry_id]
 
     # Get devices and create entities for each
-    devices = await hass.async_add_executor_job(client.get_devices)
+    devices = await hass.async_add_executor_job(api.get_cached_devices)
 
     entities = []
     for device in devices:
-        device_id = device.get("id", device.get("device_id"))
+        device_id = device.get("clientId", device.get("id", device.get("device_id")))
         device_name = device.get("name", f"Moen Faucet {device_id}")
 
-        entities.append(MoenTargetVolumeNumber(client, device_id, device_name))
+        entities.extend([
+            MoenTargetVolumeNumber(api, device_id, device_name),
+            MoenTemperatureNumber(api, device_id, device_name),
+            MoenFlowRateNumber(api, device_id, device_name),
+        ])
 
     async_add_entities(entities)
 
@@ -38,9 +42,9 @@ async def async_setup_entry(
 class MoenNumberBase(NumberEntity):
     """Base class for Moen number entities."""
 
-    def __init__(self, client: MoenClient, device_id: str, device_name: str) -> None:
+    def __init__(self, api: MoenAPI, device_id: str, device_name: str) -> None:
         """Initialize the number entity."""
-        self._client = client
+        self._api = api
         self._device_id = device_id
         self._device_name = device_name
         self._attr_has_entity_name = True
@@ -59,9 +63,9 @@ class MoenNumberBase(NumberEntity):
 class MoenTargetVolumeNumber(MoenNumberBase):
     """Number entity for target dispense volume."""
 
-    def __init__(self, client: MoenClient, device_id: str, device_name: str) -> None:
+    def __init__(self, api: MoenAPI, device_id: str, device_name: str) -> None:
         """Initialize the target volume number entity."""
-        super().__init__(client, device_id, device_name)
+        super().__init__(api, device_id, device_name)
         self._attr_unique_id = f"{device_id}_target_volume"
         self._attr_name = "Target Volume"
         self._attr_native_min_value = 50
@@ -75,3 +79,57 @@ class MoenTargetVolumeNumber(MoenNumberBase):
         volume_ml = int(value)
         self._attr_native_value = volume_ml
         _LOGGER.info("Set target volume to %dml for device %s", volume_ml, self._device_id)
+
+
+class MoenTemperatureNumber(MoenNumberBase):
+    """Number entity for water temperature."""
+
+    def __init__(self, api: MoenAPI, device_id: str, device_name: str) -> None:
+        """Initialize the temperature number entity."""
+        super().__init__(api, device_id, device_name)
+        self._attr_unique_id = f"{device_id}_temperature"
+        self._attr_name = "Temperature"
+        self._attr_native_min_value = 0
+        self._attr_native_max_value = 100
+        self._attr_native_step = 1
+        self._attr_native_unit_of_measurement = "°C"
+        self._attr_native_value = 20  # Default value
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Set the temperature."""
+        temperature = float(value)
+        self._attr_native_value = temperature
+        try:
+            await self.hass.async_add_executor_job(
+                self._api.set_specific_temperature, self._device_id, temperature
+            )
+            _LOGGER.info("Set temperature to %.1f°C for device %s", temperature, self._device_id)
+        except Exception as err:
+            _LOGGER.error("Failed to set temperature for device %s: %s", self._device_id, err)
+
+
+class MoenFlowRateNumber(MoenNumberBase):
+    """Number entity for flow rate."""
+
+    def __init__(self, api: MoenAPI, device_id: str, device_name: str) -> None:
+        """Initialize the flow rate number entity."""
+        super().__init__(api, device_id, device_name)
+        self._attr_unique_id = f"{device_id}_flow_rate"
+        self._attr_name = "Flow Rate"
+        self._attr_native_min_value = 0
+        self._attr_native_max_value = 100
+        self._attr_native_step = 5
+        self._attr_native_unit_of_measurement = "%"
+        self._attr_native_value = 50  # Default value
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Set the flow rate."""
+        flow_rate = int(value)
+        self._attr_native_value = flow_rate
+        try:
+            await self.hass.async_add_executor_job(
+                self._api.set_flow_rate, self._device_id, flow_rate
+            )
+            _LOGGER.info("Set flow rate to %d%% for device %s", flow_rate, self._device_id)
+        except Exception as err:
+            _LOGGER.error("Failed to set flow rate for device %s: %s", self._device_id, err)

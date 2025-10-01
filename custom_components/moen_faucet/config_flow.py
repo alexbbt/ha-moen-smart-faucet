@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 
-from .client import MoenClient
+from .api import MoenAPI
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class InvalidAuth(HomeAssistantError):
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
     """Validate the user input allows us to connect."""
-    client = MoenClient(
+    api = MoenAPI(
         client_id=data["client_id"],
         username=data[CONF_USERNAME],
         password=data[CONF_PASSWORD],
@@ -42,15 +42,15 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
 
     try:
         # Test the connection
-        await hass.async_add_executor_job(client.login)
+        await hass.async_add_executor_job(api.login)
 
         # Test the /users/me endpoint to verify authentication works
-        user_profile = await hass.async_add_executor_job(client.get_user_profile)
+        user_profile = await hass.async_add_executor_job(api.get_user_profile)
         _LOGGER.info("Successfully authenticated and retrieved user profile: %s", user_profile.get("email", "unknown"))
 
         # Try to get devices to see if we can find any
         try:
-            devices = await hass.async_add_executor_job(client.list_devices)
+            devices = await hass.async_add_executor_job(api.list_devices)
             device_count = len(devices) if devices else 0
             _LOGGER.info("Found %d devices", device_count)
         except Exception as device_err:
