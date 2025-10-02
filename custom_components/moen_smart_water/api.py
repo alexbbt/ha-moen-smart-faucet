@@ -1,4 +1,5 @@
 """Moen Smart Water API client for all API operations."""
+
 from __future__ import annotations
 
 import json
@@ -28,9 +29,11 @@ class MoenAPI:
         self.username = username
         self.password = password
         self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": USER_AGENT,
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": USER_AGENT,
+            }
+        )
 
         # Authentication state
         self.access_token: str | None = None
@@ -84,10 +87,7 @@ class MoenAPI:
             _LOGGER.debug("JSON string: %s", json_string)
 
             response = self.session.post(
-                login_url,
-                data=json_string,
-                headers=headers,
-                timeout=30
+                login_url, data=json_string, headers=headers, timeout=30
             )
 
             _LOGGER.debug("Response status: %s", response.status_code)
@@ -107,9 +107,9 @@ class MoenAPI:
                 self.token_expiry = time.time() + expires_in - 60
 
                 # Update session headers
-                self.session.headers.update({
-                    "Authorization": f"Bearer {self.access_token}"
-                })
+                self.session.headers.update(
+                    {"Authorization": f"Bearer {self.access_token}"}
+                )
 
                 _LOGGER.info("Successfully authenticated with Moen API")
                 return data
@@ -133,7 +133,9 @@ class MoenAPI:
 
             profile = response.json()
             self._user_profile = profile
-            _LOGGER.info("Retrieved user profile for %s", profile.get("email", "unknown"))
+            _LOGGER.info(
+                "Retrieved user profile for %s", profile.get("email", "unknown")
+            )
             return profile
 
         except requests.exceptions.RequestException as err:
@@ -170,7 +172,7 @@ class MoenAPI:
             "body": {"locale": "en_US"},
             "escape": False,
             "fn": "smartwater-app-user-api-prod-get",
-            "parse": False
+            "parse": False,
         }
 
         try:
@@ -201,7 +203,7 @@ class MoenAPI:
             "parse": False,
             "body": {"locale": "en_US"},
             "fn": "smartwater-app-device-api-prod-list",
-            "escape": False
+            "escape": False,
         }
 
         try:
@@ -214,10 +216,17 @@ class MoenAPI:
                 all_devices = payload_data.get("body", [])
 
                 # Filter for VAK devices only (ignore FLO devices)
-                vak_devices = [device for device in all_devices if device.get("deviceType") == "VAK"]
+                vak_devices = [
+                    device
+                    for device in all_devices
+                    if device.get("deviceType") == "VAK"
+                ]
                 self._devices = vak_devices
-                _LOGGER.info("Retrieved %d VAK devices (filtered from %d total devices)",
-                           len(vak_devices), len(all_devices))
+                _LOGGER.info(
+                    "Retrieved %d VAK devices (filtered from %d total devices)",
+                    len(vak_devices),
+                    len(all_devices),
+                )
                 return vak_devices
             else:
                 _LOGGER.error("Failed to list devices: %s", data)
@@ -236,7 +245,7 @@ class MoenAPI:
             "body": {"locale": "en_US"},
             "fn": "smartwater-app-preset-api-prod-list",
             "escape": False,
-            "parse": False
+            "parse": False,
         }
 
         try:
@@ -257,7 +266,9 @@ class MoenAPI:
             _LOGGER.error("Failed to list presets: %s", err)
             raise
 
-    def get_device_details(self, device_id: str, expand: str = "addons", units: str = "imperial") -> dict[str, Any]:
+    def get_device_details(
+        self, device_id: str, expand: str = "addons", units: str = "imperial"
+    ) -> dict[str, Any]:
         """Get detailed device information."""
         self._ensure_auth()
 
@@ -304,11 +315,7 @@ class MoenAPI:
             "parse": False,
             "fn": "smartwater-app-shadow-api-prod-get",
             "escape": False,
-            "body": {
-                "clientId": client_id,
-                "shadow": True,
-                "locale": "en_US"
-            }
+            "body": {"clientId": client_id, "shadow": True, "locale": "en_US"},
         }
 
         try:
@@ -323,13 +330,17 @@ class MoenAPI:
                 return shadow_data
             else:
                 _LOGGER.error("Failed to get device shadow: %s", data)
-                raise requests.exceptions.RequestException("Failed to get device shadow")
+                raise requests.exceptions.RequestException(
+                    "Failed to get device shadow"
+                )
 
         except requests.exceptions.RequestException as err:
             _LOGGER.error("Failed to get device shadow for %s: %s", client_id, err)
             raise
 
-    def get_daily_usage(self, client_id: str, timezone_offset: int = -7, query_date: int | None = None) -> dict[str, Any]:
+    def get_daily_usage(
+        self, client_id: str, timezone_offset: int = -7, query_date: int | None = None
+    ) -> dict[str, Any]:
         """Get daily usage statistics."""
         self._ensure_auth()
 
@@ -345,10 +356,10 @@ class MoenAPI:
                 "depth": "DAILY",
                 "locale": "en_US",
                 "queryDate": query_date,
-                "future": True
+                "future": True,
             },
             "fn": "smartwater-app-usage-api-prod-get-v1",
-            "escape": False
+            "escape": False,
         }
 
         try:
@@ -375,14 +386,10 @@ class MoenAPI:
 
         url = f"{INVOKER_BASE}/invoker"
         payload = {
-            "body": {
-                "limit": limit,
-                "locale": "en_US",
-                "clientId": client_id
-            },
+            "body": {"limit": limit, "locale": "en_US", "clientId": client_id},
             "escape": False,
             "fn": "smartwater-app-session-api-prod-get-v1",
-            "parse": False
+            "parse": False,
         }
 
         try:
@@ -403,7 +410,9 @@ class MoenAPI:
             _LOGGER.error("Failed to get session data for %s: %s", client_id, err)
             raise
 
-    def update_device_shadow(self, client_id: str, payload_data: dict[str, Any]) -> dict[str, Any]:
+    def update_device_shadow(
+        self, client_id: str, payload_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Update device shadow with new configuration."""
         self._ensure_auth()
 
@@ -412,11 +421,7 @@ class MoenAPI:
             "parse": False,
             "fn": "smartwater-app-shadow-api-prod-update",
             "escape": False,
-            "body": {
-                "payload": payload_data,
-                "locale": "en_US",
-                "clientId": client_id
-            }
+            "body": {"payload": payload_data, "locale": "en_US", "clientId": client_id},
         }
 
         try:
@@ -431,31 +436,34 @@ class MoenAPI:
                 return result
             else:
                 _LOGGER.error("Failed to update device shadow: %s", data)
-                raise requests.exceptions.RequestException("Failed to update device shadow")
+                raise requests.exceptions.RequestException(
+                    "Failed to update device shadow"
+                )
 
         except requests.exceptions.RequestException as err:
             _LOGGER.error("Failed to update device shadow for %s: %s", client_id, err)
             raise
 
-    def start_water_flow(self, client_id: str, temperature: str | float = "coldest", flow_rate: int = 100) -> dict[str, Any]:
+    def start_water_flow(
+        self, client_id: str, temperature: str | float = "coldest", flow_rate: int = 100
+    ) -> dict[str, Any]:
         """Start water flow with specified temperature and flow rate."""
         payload_data = {
             "commandSrc": "app",
             "command": "run",
             "temperature": temperature,
-            "flowRate": flow_rate
+            "flowRate": flow_rate,
         }
         return self.update_device_shadow(client_id, payload_data)
 
     def stop_water_flow(self, client_id: str) -> dict[str, Any]:
         """Stop water flow."""
-        payload_data = {
-            "commandSrc": "app",
-            "command": "stop"
-        }
+        payload_data = {"commandSrc": "app", "command": "stop"}
         return self.update_device_shadow(client_id, payload_data)
 
-    def set_temperature(self, client_id: str, temperature: str | float, flow_rate: int = 100) -> dict[str, Any]:
+    def set_temperature(
+        self, client_id: str, temperature: str | float, flow_rate: int = 100
+    ) -> dict[str, Any]:
         """Set specific temperature for water flow."""
         return self.start_water_flow(client_id, temperature, flow_rate)
 
@@ -471,30 +479,37 @@ class MoenAPI:
         """Set water to warm temperature."""
         return self.start_water_flow(client_id, "warm", flow_rate)
 
-    def set_specific_temperature(self, client_id: str, temperature_celsius: float, flow_rate: int = 100) -> dict[str, Any]:
+    def set_specific_temperature(
+        self, client_id: str, temperature_celsius: float, flow_rate: int = 100
+    ) -> dict[str, Any]:
         """Set specific temperature in Celsius."""
         return self.start_water_flow(client_id, temperature_celsius, flow_rate)
 
-    def update_device_settings(self, client_id: str, settings: dict[str, Any]) -> dict[str, Any]:
+    def update_device_settings(
+        self, client_id: str, settings: dict[str, Any]
+    ) -> dict[str, Any]:
         """Update various device settings."""
-        payload_data = {
-            "commandSrc": "app",
-            **settings
-        }
+        payload_data = {"commandSrc": "app", **settings}
         return self.update_device_shadow(client_id, payload_data)
 
     def set_freeze_enable(self, client_id: str, enabled: bool) -> dict[str, Any]:
         """Enable or disable freeze protection."""
         return self.update_device_settings(client_id, {"freezeEnable": enabled})
 
-    def set_timeouts(self, client_id: str, handle_timeout: int = 300, sensor_timeout: int = 300,
-                    voice_timeout: int = 300, dispense_activate_timeout: int = 120) -> dict[str, Any]:
+    def set_timeouts(
+        self,
+        client_id: str,
+        handle_timeout: int = 300,
+        sensor_timeout: int = 300,
+        voice_timeout: int = 300,
+        dispense_activate_timeout: int = 120,
+    ) -> dict[str, Any]:
         """Set various timeout values."""
         settings = {
             "handleTimeout": handle_timeout,
             "sensorTimeout": sensor_timeout,
             "voiceTimeout": voice_timeout,
-            "dispenseActivateTimeout": dispense_activate_timeout
+            "dispenseActivateTimeout": dispense_activate_timeout,
         }
         return self.update_device_settings(client_id, settings)
 

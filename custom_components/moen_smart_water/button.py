@@ -1,4 +1,5 @@
 """Button platform for Moen Smart Water integration."""
+
 from __future__ import annotations
 
 import logging
@@ -21,24 +22,34 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Moen Smart Water button entities."""
-    coordinator: MoenDataUpdateCoordinator = hass.data["moen_smart_water"][config_entry.entry_id]
+    coordinator: MoenDataUpdateCoordinator = hass.data["moen_smart_water"][
+        config_entry.entry_id
+    ]
 
     # Get devices and create entities for each
     devices = coordinator.get_all_devices()
-    _LOGGER.info("Setting up button entities. Found %d devices: %s", len(devices), list(devices.keys()))
+    _LOGGER.info(
+        "Setting up button entities. Found %d devices: %s",
+        len(devices),
+        list(devices.keys()),
+    )
 
     entities = []
     for device_id, device in devices.items():
         device_name = device.get("name", f"Moen Smart Water {device_id}")
-        _LOGGER.info("Creating button entities for device %s: %s", device_id, device_name)
+        _LOGGER.info(
+            "Creating button entities for device %s: %s", device_id, device_name
+        )
 
-        entities.extend([
-            MoenStartWaterButton(coordinator, device_id, device_name),
-            MoenStopWaterButton(coordinator, device_id, device_name),
-            MoenColdestButton(coordinator, device_id, device_name),
-            MoenWarmButton(coordinator, device_id, device_name),
-            MoenHottestButton(coordinator, device_id, device_name),
-        ])
+        entities.extend(
+            [
+                MoenStartWaterButton(coordinator, device_id, device_name),
+                MoenStopWaterButton(coordinator, device_id, device_name),
+                MoenColdestButton(coordinator, device_id, device_name),
+                MoenWarmButton(coordinator, device_id, device_name),
+                MoenHottestButton(coordinator, device_id, device_name),
+            ]
+        )
 
     _LOGGER.info("Adding %d button entities", len(entities))
     async_add_entities(entities)
@@ -93,11 +104,13 @@ class MoenStartWaterButton(MoenButtonBase):
                 self.coordinator.api.start_water_flow,
                 self._device_id,
                 "coldest",  # Default to coldest temperature
-                100  # Default to full flow rate
+                100,  # Default to full flow rate
             )
             _LOGGER.info("Started water flow for device %s", self._device_id)
         except Exception as err:
-            _LOGGER.error("Failed to start water flow for device %s: %s", self._device_id, err)
+            _LOGGER.error(
+                "Failed to start water flow for device %s: %s", self._device_id, err
+            )
 
 
 class MoenStopWaterButton(MoenButtonBase):
@@ -118,12 +131,13 @@ class MoenStopWaterButton(MoenButtonBase):
         """Handle the button press."""
         try:
             await self.hass.async_add_executor_job(
-                self.coordinator.api.stop_water_flow,
-                self._device_id
+                self.coordinator.api.stop_water_flow, self._device_id
             )
             _LOGGER.info("Stopped water flow for device %s", self._device_id)
         except Exception as err:
-            _LOGGER.error("Failed to stop water flow for device %s: %s", self._device_id, err)
+            _LOGGER.error(
+                "Failed to stop water flow for device %s: %s", self._device_id, err
+            )
 
 
 class MoenColdestButton(MoenButtonBase):
@@ -136,9 +150,7 @@ class MoenColdestButton(MoenButtonBase):
         device_name: str,
     ) -> None:
         """Initialize the coldest button."""
-        super().__init__(
-            coordinator, device_id, device_name, "Coldest", "coldest"
-        )
+        super().__init__(coordinator, device_id, device_name, "Coldest", "coldest")
 
     async def async_press(self) -> None:
         """Handle the button press."""
@@ -146,11 +158,15 @@ class MoenColdestButton(MoenButtonBase):
             await self.hass.async_add_executor_job(
                 self.coordinator.api.set_coldest,
                 self._device_id,
-                100  # Full flow rate
+                100,  # Full flow rate
             )
             _LOGGER.info("Set coldest temperature for device %s", self._device_id)
         except Exception as err:
-            _LOGGER.error("Failed to set coldest temperature for device %s: %s", self._device_id, err)
+            _LOGGER.error(
+                "Failed to set coldest temperature for device %s: %s",
+                self._device_id,
+                err,
+            )
 
 
 class MoenWarmButton(MoenButtonBase):
@@ -163,9 +179,7 @@ class MoenWarmButton(MoenButtonBase):
         device_name: str,
     ) -> None:
         """Initialize the warm button."""
-        super().__init__(
-            coordinator, device_id, device_name, "Warm", "warm"
-        )
+        super().__init__(coordinator, device_id, device_name, "Warm", "warm")
 
     async def async_press(self) -> None:
         """Handle the button press."""
@@ -173,11 +187,13 @@ class MoenWarmButton(MoenButtonBase):
             await self.hass.async_add_executor_job(
                 self.coordinator.api.set_warm,
                 self._device_id,
-                100  # Full flow rate
+                100,  # Full flow rate
             )
             _LOGGER.info("Set warm temperature for device %s", self._device_id)
         except Exception as err:
-            _LOGGER.error("Failed to set warm temperature for device %s: %s", self._device_id, err)
+            _LOGGER.error(
+                "Failed to set warm temperature for device %s: %s", self._device_id, err
+            )
 
 
 class MoenHottestButton(MoenButtonBase):
@@ -190,9 +206,7 @@ class MoenHottestButton(MoenButtonBase):
         device_name: str,
     ) -> None:
         """Initialize the hottest button."""
-        super().__init__(
-            coordinator, device_id, device_name, "Hottest", "hottest"
-        )
+        super().__init__(coordinator, device_id, device_name, "Hottest", "hottest")
 
     async def async_press(self) -> None:
         """Handle the button press."""
@@ -200,8 +214,12 @@ class MoenHottestButton(MoenButtonBase):
             await self.hass.async_add_executor_job(
                 self.coordinator.api.set_hottest,
                 self._device_id,
-                100  # Full flow rate
+                100,  # Full flow rate
             )
             _LOGGER.info("Set hottest temperature for device %s", self._device_id)
         except Exception as err:
-            _LOGGER.error("Failed to set hottest temperature for device %s: %s", self._device_id, err)
+            _LOGGER.error(
+                "Failed to set hottest temperature for device %s: %s",
+                self._device_id,
+                err,
+            )
