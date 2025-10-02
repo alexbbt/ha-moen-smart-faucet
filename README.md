@@ -35,7 +35,7 @@
 * Valid Moen account credentials
 
 > [!NOTE]
-> Only tested with MotionSense Wave Kitchen Faucets (Cia model). May work with other models in the same family. [Report other models](https://github.com/alexbbt/ha-moen-smart-faucet/issues/new).
+> Only tested with MotionSense Wave Kitchen Faucets (Cia model). May work with other models in the same family. [Report other models](https://github.com/alexbbt/ha-moen-smart-water/issues/new).
 
 ## Features
 
@@ -52,7 +52,7 @@
 ## Installation
 
 ### Via [HACS](https://hacs.xyz/)
-<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=alexbbt&repository=ha-moen-smart-faucet&category=integration" target="_blank"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store." /></a>
+<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=alexbbt&repository=ha-moen-smart-water&category=integration" target="_blank"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store." /></a>
 
 ### Manually
 
