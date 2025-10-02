@@ -45,7 +45,6 @@ def main():
 
         if "access_token" in creds:
             # Use stored tokens
-            api.client_id = creds["client_id"]
             api.access_token = creds["access_token"]
             api.id_token = creds.get("id_token")
             api.refresh_token = creds.get("refresh_token")
@@ -55,7 +54,33 @@ def main():
                 api.session.headers.update(
                     {"Authorization": f"Bearer {api.access_token}"}
                 )
-            print("✓ Using stored OAuth tokens")
+
+            # Check if token needs refresh
+            import time
+            if time.time() > api.token_expiry:
+                if api.refresh_token:
+                    print("Token expired, attempting refresh...")
+                    if api._refresh_access_token():
+                        print("✓ Token refreshed successfully")
+                        # Save refreshed tokens
+                        import json
+                        refreshed_creds = {
+                            "access_token": api.access_token,
+                            "id_token": api.id_token,
+                            "refresh_token": api.refresh_token,
+                            "expires_at": api.token_expiry,
+                        }
+                        with open(credentials_file, "w") as f:
+                            json.dump(refreshed_creds, f, indent=2)
+                        print("✓ Refreshed tokens saved")
+                    else:
+                        print("✗ Token refresh failed")
+                        sys.exit(1)
+                else:
+                    print("✗ Token expired and no refresh token available")
+                    sys.exit(1)
+            else:
+                print("✓ Using stored OAuth tokens")
         else:
             print("No valid tokens found. Please run the main test script first.")
             sys.exit(1)

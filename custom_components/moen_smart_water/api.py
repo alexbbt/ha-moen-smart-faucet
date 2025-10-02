@@ -53,8 +53,77 @@ class MoenAPI:
     def _ensure_auth(self) -> None:
         """Ensure we have a valid authentication token."""
         if not self.access_token or time.time() > self.token_expiry:
-            _LOGGER.info("Token expired or missing, re-authenticating")
-            self.login()
+            _LOGGER.info("Token expired or missing, attempting refresh")
+            if self.refresh_token and not self._refresh_access_token():
+                _LOGGER.info("Refresh failed, re-authenticating with username/password")
+                self.login()
+
+    def _refresh_access_token(self) -> bool:
+        """Refresh the access token using the refresh token."""
+        if not self.refresh_token:
+            return False
+
+        _LOGGER.info("Refreshing access token using refresh token")
+
+        refresh_url = f"{OAUTH_BASE}/oauth2/token"
+
+        # Create refresh token payload
+        refresh_payload = {
+            "grant_type": "refresh_token",
+            "refresh_token": self.refresh_token,
+            "client_id": self.client_id,
+        }
+
+        headers = {
+            "Accept": "*/*",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "User-Agent": USER_AGENT,
+            "priority": "u=3",
+        }
+
+        try:
+            import json
+
+            json_string = json.dumps(refresh_payload)
+
+            _LOGGER.debug("Refresh URL: %s", refresh_url)
+            _LOGGER.debug("Refresh payload: %s", refresh_payload)
+
+            response = self.session.post(
+                refresh_url, data=json_string, headers=headers, timeout=30
+            )
+
+            _LOGGER.debug("Refresh response status: %s", response.status_code)
+            response.raise_for_status()
+
+            data = response.json()
+
+            if "token" in data:
+                token_data = data["token"]
+                self.access_token = token_data.get("access_token")
+                self.id_token = token_data.get("id_token")
+                self.refresh_token = token_data.get("refresh_token", self.refresh_token)
+
+                # Set expiry with 60 second buffer
+                expires_in = token_data.get("expires_in", 3600)
+                self.token_expiry = time.time() + expires_in - 60
+
+                # Update session headers
+                self.session.headers.update(
+                    {"Authorization": f"Bearer {self.access_token}"}
+                )
+
+                _LOGGER.info("Successfully refreshed access token")
+                return True
+            else:
+                _LOGGER.error("No token in refresh response: %s", data)
+                return False
+
+        except Exception as err:
+            _LOGGER.error("Token refresh failed: %s", err)
+            return False
 
     def login(self) -> dict[str, Any]:
         """Login to the Moen API and get access token."""

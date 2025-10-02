@@ -128,23 +128,56 @@ class MoenAPITester:
         """Test authentication."""
         print("\n=== Testing Authentication ===")
         try:
-            # Only login if we don't have valid tokens
+            # Check if we need to refresh or login
             if not self.api.access_token or time.time() > self.api.token_expiry:
-                login_result = self.api.login()
-                print("✓ Authentication successful")
+                if self.api.refresh_token:
+                    print("Attempting to refresh access token...")
+                    if self.api._refresh_access_token():
+                        print("✓ Token refreshed successfully")
 
-                # Save tokens for future use
-                if login_result and "token" in login_result:
-                    token_data = login_result["token"]
-                    tokens_to_save = {
-                        "access_token": token_data.get("access_token"),
-                        "id_token": token_data.get("id_token"),
-                        "refresh_token": token_data.get("refresh_token"),
-                        "expires_at": self.api.token_expiry,
-                        "expires_in": token_data.get("expires_in", 3600),
-                    }
-                    self.save_tokens(tokens_to_save)
-                    print("✓ OAuth tokens saved for future use")
+                        # Save refreshed tokens
+                        tokens_to_save = {
+                            "access_token": self.api.access_token,
+                            "id_token": self.api.id_token,
+                            "refresh_token": self.api.refresh_token,
+                            "expires_at": self.api.token_expiry,
+                        }
+                        self.save_tokens(tokens_to_save)
+                        print("✓ Refreshed tokens saved for future use")
+                    else:
+                        print("Refresh failed, logging in with username/password...")
+                        login_result = self.api.login()
+                        print("✓ Authentication successful")
+
+                        # Save tokens for future use
+                        if login_result and "token" in login_result:
+                            token_data = login_result["token"]
+                            tokens_to_save = {
+                                "access_token": token_data.get("access_token"),
+                                "id_token": token_data.get("id_token"),
+                                "refresh_token": token_data.get("refresh_token"),
+                                "expires_at": self.api.token_expiry,
+                                "expires_in": token_data.get("expires_in", 3600),
+                            }
+                            self.save_tokens(tokens_to_save)
+                            print("✓ OAuth tokens saved for future use")
+                else:
+                    print("No refresh token available, logging in with username/password...")
+                    login_result = self.api.login()
+                    print("✓ Authentication successful")
+
+                    # Save tokens for future use
+                    if login_result and "token" in login_result:
+                        token_data = login_result["token"]
+                        tokens_to_save = {
+                            "access_token": token_data.get("access_token"),
+                            "id_token": token_data.get("id_token"),
+                            "refresh_token": token_data.get("refresh_token"),
+                            "expires_at": self.api.token_expiry,
+                            "expires_in": token_data.get("expires_in", 3600),
+                        }
+                        self.save_tokens(tokens_to_save)
+                        print("✓ OAuth tokens saved for future use")
             else:
                 print("✓ Using existing valid tokens")
 
