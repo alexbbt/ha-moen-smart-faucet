@@ -1,0 +1,107 @@
+dispense_water:
+  name: Dispense Water
+  description: Start dispensing water from the Moen Smart Faucet
+  fields:
+    device_id:
+      name: Device ID
+      description: The device ID of the Moen Smart Faucet
+      required: true
+      selector:
+        text:
+    volume_ml:
+      name: Volume (ml)
+      description: Volume of water to dispense in milliliters
+      required: false
+      default: 250
+      selector:
+        number:
+          min: 50
+          max: 2000
+          unit_of_measurement: ml
+    timeout:
+      name: Timeout (seconds)
+      description: Maximum time to dispense water in seconds
+      required: false
+      default: 120
+      selector:
+        number:
+          min: 10
+          max: 300
+          unit_of_measurement: s
+
+stop_dispensing:
+  name: Stop Dispensing
+  description: Stop dispensing water from the Moen Smart Faucet
+  fields:
+    device_id:
+      name: Device ID
+      description: The device ID of the Moen Smart Faucet
+      required: true
+      selector:
+        text:
+
+get_device_status:
+  name: Get Device Status
+  description: Get the current status and shadow data for a Moen Smart Faucet device
+  fields:
+    device_id:
+      name: Device ID
+      description: The device ID of the Moen Smart Faucet
+      required: true
+      selector:
+        text:
+
+get_user_profile:
+  name: Get User Profile
+  description: Get the user profile information from the Moen API
+  fields: {}
+
+set_temperature:
+  name: Set Temperature
+  description: Set the water temperature for the Moen Smart Faucet
+  fields:
+    device_id:
+      name: Device ID
+      description: The device ID of the Moen Smart Faucet
+      required: true
+      selector:
+        text:
+    temperature:
+      name: Temperature
+      description: Water temperature in Celsius
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "°C"
+    flow_rate:
+      name: Flow Rate
+      description: Flow rate percentage (0-100)
+      required: false
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+
+set_flow_rate:
+  name: Set Flow Rate
+  description: Set the flow rate percentage for the Moen Smart Faucet
+  fields:
+    device_id:
+      name: Device ID
+      description: The device ID of the Moen Smart Faucet
+      required: true
+      selector:
+        text:
+    flow_rate:
+      name: Flow Rate
+      description: Flow rate percentage (0-100)
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"

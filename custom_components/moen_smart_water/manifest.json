@@ -1,13 +1,12 @@
 {
   "domain": "moen_smart_water",
   "name": "Moen Smart Water (Unofficial)",
-  "version": "0.8.2",
-  "requirements": ["requests>=2.28.0"],
-  "dependencies": [],
   "codeowners": ["@alexbbt"],
-  "iot_class": "cloud_polling",
   "config_flow": true,
+  "dependencies": [],
   "documentation": "https://github.com/alexbbt/ha-moen-smart-water",
+  "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/alexbbt/ha-moen-smart-water/issues",
-  "homeassistant": "2023.1.0"
+  "requirements": ["requests>=2.28.0"],
+  "version": "0.8.2"
 }
