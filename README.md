@@ -19,13 +19,12 @@
 * Easy UI-based configuration
 * Professional Moen integration
 
-## ⚠️ Important Notes
-
-- This integration is **unofficial** and not affiliated with Moen
-- It requires your Moen account credentials to work
-- All communication goes through Moen's cloud services
-- Use at your own risk - may violate Moen's Terms of Service
-- The integration is based on reverse-engineering the official mobile app
+> [!WARNING]
+> - This integration is **unofficial** and not affiliated with Moen
+> - It requires your Moen account credentials to work
+> - All communication goes through Moen's cloud services
+> - Use at your own risk - may violate Moen's Terms of Service
+> - The integration is based on reverse-engineering the official mobile app
 
 ### Supported Devices
 #### This integration has been tested with the following Moen Smart Water Network faucet series
