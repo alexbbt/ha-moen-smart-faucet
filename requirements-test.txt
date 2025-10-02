@@ -1,0 +1,5 @@
+# Testing and linting dependencies
+ruff>=0.1.0
+mypy>=1.0.0
+types-requests>=2.28.0
+voluptuous>=0.12.0
