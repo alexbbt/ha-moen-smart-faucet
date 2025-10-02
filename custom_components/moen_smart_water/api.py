@@ -1,4 +1,4 @@
-"""Moen Smart Faucet API client for all API operations."""
+"""Moen Smart Water API client for all API operations."""
 from __future__ import annotations
 
 import json
@@ -20,7 +20,7 @@ USER_AGENT = "Smartwater-iOS-prod-3.39.0"
 
 
 class MoenAPI:
-    """Comprehensive API client for Moen Smart Faucet operations."""
+    """Comprehensive API client for Moen Smart Water operations."""
 
     def __init__(self, client_id: str, username: str, password: str) -> None:
         """Initialize the Moen API client."""

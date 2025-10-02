@@ -1,10 +1,10 @@
-# Example configuration for Moen Faucet integration
+# Example configuration for Moen Smart Water integration
 # This is for reference only - the integration uses config flow
 
 # If you want to use YAML configuration instead of config flow,
 # you can add this to your configuration.yaml:
 
-# moen_faucet:
+# moen_smart_water:
 #   client_id: "your_client_id_here"
 #   username: "your_email@example.com"
 #   password: "your_password_here"

@@ -1,4 +1,4 @@
-# Reverse-engineering Moen / U by Moen Faucet for Home Assistant Integration
+# Reverse-engineering Moen / U by Moen Smart Water for Home Assistant Integration
 
 ## Executive summary
 Your faucet uses **AWS IoT (MQTT over TLS, port 8883)** with **mutual TLS** (device presents a client certificate), and the official **mobile app** talks to **AWS API Gateway** endpoints (observed host: `*.execute-api.us-east-2.amazonaws.com`) to send commands.
@@ -66,8 +66,8 @@ Content-Type: application/json
 ### manifest.json
 ```json
 {
-  "domain": "moen_faucet",
-  "name": "Moen Smart Faucet (Unofficial)",
+  "domain": "moen_smart_water",
+  "name": "Moen Smart Water (Unofficial)",
   "version": "0.1.0",
   "requirements": ["requests>=2.28"],
   "dependencies": [],

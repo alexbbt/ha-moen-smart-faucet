@@ -1,4 +1,4 @@
-"""Sensor platform for Moen Faucet integration."""
+"""Sensor platform for Moen Smart Water integration."""
 from __future__ import annotations
 
 import logging
@@ -21,8 +21,8 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Moen Faucet sensor entities."""
-    coordinator: MoenDataUpdateCoordinator = hass.data["moen_faucet"][config_entry.entry_id]
+    """Set up Moen Smart Water sensor entities."""
+    coordinator: MoenDataUpdateCoordinator = hass.data["moen_smart_water"][config_entry.entry_id]
 
     # Get devices and create entities for each
     devices = coordinator.get_all_devices()
@@ -30,7 +30,7 @@ async def async_setup_entry(
 
     entities = []
     for device_id, device in devices.items():
-        device_name = device.get("name", f"Moen Faucet {device_id}")
+        device_name = device.get("name", f"Moen Smart Water {device_id}")
         _LOGGER.info("Creating sensor entities for device %s: %s", device_id, device_name)
 
         entities.extend([
@@ -83,7 +83,7 @@ class MoenSensorBase(CoordinatorEntity, SensorEntity):
 
         # Device information
         self._attr_device_info = DeviceInfo(
-            identifiers={("moen_faucet", self._device_id)},
+            identifiers={("moen_smart_water", self._device_id)},
             name=self._device_name,
             manufacturer="Moen",
             model="Smart Faucet",
