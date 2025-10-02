@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import pytest
 from pathlib import Path
 
 from custom_components.moen_smart_water import __version__
@@ -14,12 +13,22 @@ class TestManifest:
 
     def test_manifest_exists(self):
         """Test that manifest.json exists."""
-        manifest_path = Path(__file__).parent.parent / "custom_components" / "moen_smart_water" / "manifest.json"
+        manifest_path = (
+            Path(__file__).parent.parent
+            / "custom_components"
+            / "moen_smart_water"
+            / "manifest.json"
+        )
         assert manifest_path.exists()
 
     def test_manifest_valid_json(self):
         """Test that manifest.json is valid JSON."""
-        manifest_path = Path(__file__).parent.parent / "custom_components" / "moen_smart_water" / "manifest.json"
+        manifest_path = (
+            Path(__file__).parent.parent
+            / "custom_components"
+            / "moen_smart_water"
+            / "manifest.json"
+        )
 
         with open(manifest_path) as f:
             manifest = json.load(f)
@@ -28,7 +37,12 @@ class TestManifest:
 
     def test_manifest_required_keys(self):
         """Test that manifest.json contains required keys."""
-        manifest_path = Path(__file__).parent.parent / "custom_components" / "moen_smart_water" / "manifest.json"
+        manifest_path = (
+            Path(__file__).parent.parent
+            / "custom_components"
+            / "moen_smart_water"
+            / "manifest.json"
+        )
 
         with open(manifest_path) as f:
             manifest = json.load(f)
@@ -43,7 +57,7 @@ class TestManifest:
             "documentation",
             "iot_class",
             "issue_tracker",
-            "requirements"
+            "requirements",
         ]
 
         for key in required_keys:
@@ -51,7 +65,12 @@ class TestManifest:
 
     def test_manifest_domain(self):
         """Test that manifest domain is correct."""
-        manifest_path = Path(__file__).parent.parent / "custom_components" / "moen_smart_water" / "manifest.json"
+        manifest_path = (
+            Path(__file__).parent.parent
+            / "custom_components"
+            / "moen_smart_water"
+            / "manifest.json"
+        )
 
         with open(manifest_path) as f:
             manifest = json.load(f)
@@ -60,7 +79,12 @@ class TestManifest:
 
     def test_manifest_version_matches_init(self):
         """Test that manifest version matches __init__.py version."""
-        manifest_path = Path(__file__).parent.parent / "custom_components" / "moen_smart_water" / "manifest.json"
+        manifest_path = (
+            Path(__file__).parent.parent
+            / "custom_components"
+            / "moen_smart_water"
+            / "manifest.json"
+        )
 
         with open(manifest_path) as f:
             manifest = json.load(f)
@@ -69,7 +93,12 @@ class TestManifest:
 
     def test_manifest_requirements(self):
         """Test that manifest has valid requirements."""
-        manifest_path = Path(__file__).parent.parent / "custom_components" / "moen_smart_water" / "manifest.json"
+        manifest_path = (
+            Path(__file__).parent.parent
+            / "custom_components"
+            / "moen_smart_water"
+            / "manifest.json"
+        )
 
         with open(manifest_path) as f:
             manifest = json.load(f)
@@ -110,7 +139,7 @@ class TestHACSManifest:
             "filename",
             "country",
             "homeassistant",
-            "render_readme"
+            "render_readme",
         ]
 
         for key in required_keys:
@@ -132,14 +161,24 @@ class TestServicesYAML:
 
     def test_services_yaml_exists(self):
         """Test that services.yaml exists."""
-        services_path = Path(__file__).parent.parent / "custom_components" / "moen_smart_water" / "services.yaml"
+        services_path = (
+            Path(__file__).parent.parent
+            / "custom_components"
+            / "moen_smart_water"
+            / "services.yaml"
+        )
         assert services_path.exists()
 
     def test_services_yaml_valid_yaml(self):
         """Test that services.yaml is valid YAML."""
         import yaml
 
-        services_path = Path(__file__).parent.parent / "custom_components" / "moen_smart_water" / "services.yaml"
+        services_path = (
+            Path(__file__).parent.parent
+            / "custom_components"
+            / "moen_smart_water"
+            / "services.yaml"
+        )
 
         with open(services_path) as f:
             services = yaml.safe_load(f)
@@ -150,7 +189,12 @@ class TestServicesYAML:
         """Test that services.yaml contains expected services."""
         import yaml
 
-        services_path = Path(__file__).parent.parent / "custom_components" / "moen_smart_water" / "services.yaml"
+        services_path = (
+            Path(__file__).parent.parent
+            / "custom_components"
+            / "moen_smart_water"
+            / "services.yaml"
+        )
 
         with open(services_path) as f:
             services = yaml.safe_load(f)
@@ -161,7 +205,7 @@ class TestServicesYAML:
             "get_device_status",
             "get_user_profile",
             "set_temperature",
-            "set_flow_rate"
+            "set_flow_rate",
         ]
 
         for service in expected_services:

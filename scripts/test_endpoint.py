@@ -21,10 +21,10 @@ from moen_api_standalone import MoenAPI
 def main():
     """Test a specific endpoint."""
     if len(sys.argv) != 2:
-        print("Usage: python test_endpoint.py \"method_name(args)\"")
+        print('Usage: python test_endpoint.py "method_name(args)"')
         print("\nExamples:")
-        print("  python test_endpoint.py \"get_user_profile()\"")
-        print("  python test_endpoint.py \"list_devices()\"")
+        print('  python test_endpoint.py "get_user_profile()"')
+        print('  python test_endpoint.py "list_devices()"')
         print("  python test_endpoint.py \"set_coldest('101046568')\"")
         sys.exit(1)
 
@@ -39,21 +39,22 @@ def main():
     credentials_file = Path(__file__).parent / "moen_credentials.json"
     if credentials_file.exists():
         import json
+
         with open(credentials_file) as f:
             creds = json.load(f)
 
-        if 'access_token' in creds:
+        if "access_token" in creds:
             # Use stored tokens
-            api.client_id = creds['client_id']
-            api.access_token = creds['access_token']
-            api.id_token = creds.get('id_token')
-            api.refresh_token = creds.get('refresh_token')
-            api.token_expiry = creds.get('expires_at', 0)
+            api.client_id = creds["client_id"]
+            api.access_token = creds["access_token"]
+            api.id_token = creds.get("id_token")
+            api.refresh_token = creds.get("refresh_token")
+            api.token_expiry = creds.get("expires_at", 0)
 
             if api.access_token:
-                api.session.headers.update({
-                    "Authorization": f"Bearer {api.access_token}"
-                })
+                api.session.headers.update(
+                    {"Authorization": f"Bearer {api.access_token}"}
+                )
             print("✓ Using stored OAuth tokens")
         else:
             print("No valid tokens found. Please run the main test script first.")

@@ -2,20 +2,23 @@
 
 from __future__ import annotations
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from custom_components.moen_smart_water.coordinator import MoenDataUpdateCoordinator
+import pytest
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+
 from custom_components.moen_smart_water.api import MoenAPI
+from custom_components.moen_smart_water.coordinator import MoenDataUpdateCoordinator
 
 
 @pytest.fixture
-def hass() -> HomeAssistant:
+async def hass() -> HomeAssistant:
     """Return a Home Assistant instance for testing."""
-    return HomeAssistant("")
+    hass_instance = HomeAssistant("")
+    await hass_instance.async_start()
+    yield hass_instance
+    await hass_instance.async_stop()
 
 
 @pytest.fixture
@@ -43,9 +46,13 @@ def mock_api() -> MagicMock:
 
 
 @pytest.fixture
-def coordinator(hass: HomeAssistant, config_entry: ConfigEntry, mock_api: MagicMock) -> MoenDataUpdateCoordinator:
+async def coordinator(
+    hass: HomeAssistant, config_entry: ConfigEntry, mock_api: MagicMock
+) -> MoenDataUpdateCoordinator:
     """Return a MoenDataUpdateCoordinator instance for testing."""
-    with patch("custom_components.moen_smart_water.coordinator.MoenAPI", return_value=mock_api):
+    with patch(
+        "custom_components.moen_smart_water.coordinator.MoenAPI", return_value=mock_api
+    ):
         coordinator = MoenDataUpdateCoordinator(hass, config_entry)
         return coordinator
 
@@ -63,13 +70,13 @@ def sample_device_data() -> dict:
                 "desired": {
                     "temperature": 25.0,
                     "flow_rate": 50,
-                    "water_flowing": False
+                    "water_flowing": False,
                 },
                 "reported": {
                     "temperature": 25.0,
                     "flow_rate": 50,
-                    "water_flowing": False
-                }
+                    "water_flowing": False,
+                },
             }
-        }
+        },
     }
