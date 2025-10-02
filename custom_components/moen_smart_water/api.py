@@ -112,7 +112,7 @@ class MoenAPI:
                 )
 
                 _LOGGER.info("Successfully authenticated with Moen API")
-                return data
+                return dict(data)
             else:
                 _LOGGER.error("No token in response: %s", data)
                 raise requests.exceptions.RequestException("No token in response")
@@ -136,7 +136,7 @@ class MoenAPI:
             _LOGGER.info(
                 "Retrieved user profile for %s", profile.get("email", "unknown")
             )
-            return profile
+            return dict(profile)
 
         except requests.exceptions.RequestException as err:
             _LOGGER.error("Failed to get user profile: %s", err)
@@ -157,7 +157,7 @@ class MoenAPI:
             locations = data.get("locations", [])
             self._locations = locations
             _LOGGER.info("Retrieved %d locations", len(locations))
-            return locations
+            return list(locations)
 
         except requests.exceptions.RequestException as err:
             _LOGGER.error("Failed to get locations: %s", err)
@@ -185,7 +185,7 @@ class MoenAPI:
                 body = payload_data.get("body", {})
                 self._temperature_definitions = body.get("temperatureDefinitions", {})
                 _LOGGER.info("Retrieved user details and temperature definitions")
-                return body
+                return dict(body)
             else:
                 _LOGGER.error("Failed to get user details: %s", data)
                 raise requests.exceptions.RequestException("Failed to get user details")
@@ -227,7 +227,7 @@ class MoenAPI:
                     len(vak_devices),
                     len(all_devices),
                 )
-                return vak_devices
+                return list(vak_devices)
             else:
                 _LOGGER.error("Failed to list devices: %s", data)
                 raise requests.exceptions.RequestException("Failed to list devices")
@@ -257,7 +257,7 @@ class MoenAPI:
                 payload_data = json.loads(data["Payload"])
                 presets = payload_data.get("body", [])
                 _LOGGER.info("Retrieved %d presets", len(presets))
-                return presets
+                return list(presets)
             else:
                 _LOGGER.error("Failed to list presets: %s", data)
                 raise requests.exceptions.RequestException("Failed to list presets")
@@ -281,7 +281,7 @@ class MoenAPI:
 
             device_data = response.json()
             _LOGGER.info("Retrieved device details for %s", device_id)
-            return device_data
+            return dict(device_data)
 
         except requests.exceptions.RequestException as err:
             _LOGGER.error("Failed to get device details for %s: %s", device_id, err)
@@ -300,7 +300,7 @@ class MoenAPI:
 
             winterize_data = response.json()
             _LOGGER.info("Retrieved winterize status for location %s", location_id)
-            return winterize_data
+            return dict(winterize_data)
 
         except requests.exceptions.RequestException as err:
             _LOGGER.error("Failed to get winterize status for %s: %s", location_id, err)
@@ -327,7 +327,7 @@ class MoenAPI:
                 payload_data = json.loads(data["Payload"])
                 shadow_data = payload_data.get("body", {})
                 _LOGGER.info("Retrieved device shadow for %s", client_id)
-                return shadow_data
+                return dict(shadow_data)
             else:
                 _LOGGER.error("Failed to get device shadow: %s", data)
                 raise requests.exceptions.RequestException(
@@ -371,7 +371,7 @@ class MoenAPI:
                 payload_data = json.loads(data["Payload"])
                 usage_data = payload_data.get("body", {})
                 _LOGGER.info("Retrieved daily usage for %s", client_id)
-                return usage_data
+                return dict(usage_data)
             else:
                 _LOGGER.error("Failed to get daily usage: %s", data)
                 raise requests.exceptions.RequestException("Failed to get daily usage")
@@ -401,7 +401,7 @@ class MoenAPI:
                 payload_data = json.loads(data["Payload"])
                 session_data = payload_data.get("body", {})
                 _LOGGER.info("Retrieved session data for %s", client_id)
-                return session_data
+                return dict(session_data)
             else:
                 _LOGGER.error("Failed to get session data: %s", data)
                 raise requests.exceptions.RequestException("Failed to get session data")
@@ -433,7 +433,7 @@ class MoenAPI:
                 payload_data = json.loads(data["Payload"])
                 result = payload_data.get("body", {})
                 _LOGGER.info("Updated device shadow for %s", client_id)
-                return result
+                return dict(result)
             else:
                 _LOGGER.error("Failed to update device shadow: %s", data)
                 raise requests.exceptions.RequestException(
