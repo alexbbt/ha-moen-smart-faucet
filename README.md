@@ -3,6 +3,12 @@
 
 # Moen Smart Water Integration for Home Assistant
 
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
+[![ha_version](https://img.shields.io/badge/Home%20Assistant-2023.1%2B-blue.svg?style=for-the-badge)](https://www.home-assistant.io/)
+[![version](https://img.shields.io/github/v/release/alexbbt/ha-moen-smart-water?style=for-the-badge&color=purple)](https://github.com/alexbbt/ha-moen-smart-water/releases)
+[![license](https://img.shields.io/github/license/alexbbt/ha-moen-smart-water?style=for-the-badge&color=red)](https://github.com/alexbbt/ha-moen-smart-water/blob/main/LICENSE)
+[![iot_class](https://img.shields.io/badge/iot_class-cloud_polling-green.svg?style=for-the-badge)](https://developers.home-assistant.io/docs/creating_integration_manifest#iot-class)
+
 ### Smart Faucet Control Made Simple
 #### Control your Moen Smart Water Network faucet directly from Home Assistant
 
