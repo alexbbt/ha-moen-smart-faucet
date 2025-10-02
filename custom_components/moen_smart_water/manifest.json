@@ -7,7 +7,7 @@
   "codeowners": ["@alexbbt"],
   "iot_class": "cloud_polling",
   "config_flow": true,
-  "documentation": "https://github.com/alexbbt/ha-moen-smart-faucet",
-  "issue_tracker": "https://github.com/alexbbt/ha-moen-smart-faucet/issues",
+  "documentation": "https://github.com/alexbbt/ha-moen-smart-water",
+  "issue_tracker": "https://github.com/alexbbt/ha-moen-smart-water/issues",
   "homeassistant": "2023.1.0"
 }
