@@ -31,22 +31,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault("moen_smart_water", {})
 
     # Initialize the API client
-    api = MoenAPI(
-        username=entry.data["username"],
-        password=entry.data["password"],
-    )
-
-    # Test the connection and get user profile
-    try:
-        await hass.async_add_executor_job(api.login)
-        user_profile = await hass.async_add_executor_job(api.get_user_profile)
-        _LOGGER.info(
-            "Successfully connected to Moen API for user: %s",
-            user_profile.get("email", "unknown"),
+    if "token" in entry.data:
+        # OAuth2 authentication
+        api = MoenAPI.from_token(entry.data["token"])
+        _LOGGER.info("Using OAuth2 authentication")
+    else:
+        # Legacy username/password authentication
+        api = MoenAPI(
+            username=entry.data["username"],
+            password=entry.data["password"],
         )
-    except Exception as err:
-        _LOGGER.error("Failed to connect to Moen API: %s", err)
-        return False
+        # Test the connection and get user profile
+        try:
+            await hass.async_add_executor_job(api.login)
+            user_profile = await hass.async_add_executor_job(api.get_user_profile)
+            _LOGGER.info(
+                "Successfully connected to Moen API for user: %s",
+                user_profile.get("email", "unknown"),
+            )
+        except Exception as err:
+            _LOGGER.error("Failed to connect to Moen API: %s", err)
+            return False
 
     # Create coordinator for data updates
     coordinator = MoenDataUpdateCoordinator(hass, api, entry)

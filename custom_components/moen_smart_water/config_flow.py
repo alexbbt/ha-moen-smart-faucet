@@ -6,104 +6,105 @@ import logging
 from typing import Any
 
 import voluptuous as vol
-from homeassistant import config_entries
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import config_entry_oauth2_flow
 
-from .api import MoenAPI
+from .api import CLIENT_ID, MoenAPI
+from .oauth2_impl import MoenOAuth2Implementation
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_USER_DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_USERNAME): str,
-        vol.Required(CONF_PASSWORD): str,
-    }
-)
 
-
-class CannotConnect(HomeAssistantError):
-    """Error to indicate we cannot connect."""
-
-
-class InvalidAuth(HomeAssistantError):
-    """Error to indicate there is invalid auth."""
-
-
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
-    """Validate the user input allows us to connect."""
-    api = MoenAPI(
-        username=data[CONF_USERNAME],
-        password=data[CONF_PASSWORD],
-    )
-
-    try:
-        # Test the connection
-        await hass.async_add_executor_job(api.login)
-
-        # Test the /users/me endpoint to verify authentication works
-        user_profile = await hass.async_add_executor_job(api.get_user_profile)
-        _LOGGER.info(
-            "Successfully authenticated and retrieved user profile: %s",
-            user_profile.get("email", "unknown"),
-        )
-
-        # Try to get devices to see if we can find any
-        try:
-            devices = await hass.async_add_executor_job(api.list_devices)
-            device_count = len(devices) if devices else 0
-            _LOGGER.info("Found %d devices", device_count)
-        except Exception as device_err:
-            _LOGGER.warning(
-                "Could not retrieve devices, but authentication works: %s", device_err
-            )
-            devices = []
-            device_count = 0
-
-        return {
-            "title": f"Moen Smart Water ({user_profile.get('firstName', 'User')} - {device_count} devices)",
-            "user_profile": user_profile,
-            "device_count": device_count,
-        }
-
-    except Exception as err:
-        _LOGGER.error("Failed to validate Moen API connection: %s", err)
-        if "401" in str(err) or "unauthorized" in str(err).lower():
-            raise InvalidAuth("Invalid credentials") from err
-        raise CannotConnect(f"Failed to connect to Moen API: {err}") from err
-
-
-class ConfigFlow(config_entries.ConfigFlow):
+class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
     """Handle a config flow for Moen Smart Water."""
 
-    VERSION = 1
     DOMAIN = "moen_smart_water"
+
+    @property
+    def logger(self) -> logging.Logger:
+        """Return logger."""
+        return _LOGGER
+
+    @property
+    def extra_authorize_data(self) -> dict[str, Any]:
+        """Extra data that needs to be appended to the authorize url."""
+        return {
+            "scope": "openid profile email",
+            "response_type": "code",
+        }
+
+    async def async_oauth_create_entry(self, data: dict[str, Any]) -> FlowResult:
+        """Create an entry for the flow, or update existing entry."""
+        # Get user profile to create a meaningful title
+        try:
+            api = MoenAPI.from_token(data["token"])
+            user_profile = await self.hass.async_add_executor_job(api.get_user_profile)
+
+            # Try to get devices to see if we can find any
+            try:
+                devices = await self.hass.async_add_executor_job(api.list_devices)
+                device_count = len(devices) if devices else 0
+                _LOGGER.info("Found %d devices", device_count)
+            except Exception as device_err:
+                _LOGGER.warning(
+                    "Could not retrieve devices, but authentication works: %s",
+                    device_err,
+                )
+                devices = []
+                device_count = 0
+
+            title = f"Moen Smart Water ({user_profile.get('firstName', 'User')} - {device_count} devices)"
+
+            return self.async_create_entry(
+                title=title,
+                data=data,
+            )
+        except Exception as err:
+            _LOGGER.error("Failed to validate Moen API connection: %s", err)
+            return self.async_abort(reason="cannot_connect")
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
-        errors: dict[str, str] = {}
+        if not self.flow_impl:
+            return self.async_abort(reason="missing_configuration")
+        return await self.async_step_pick_implementation()
 
+    async def async_step_pick_implementation(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle the step to pick implementation."""
         if user_input is not None:
-            try:
-                info = await validate_input(self.hass, user_input)
-            except CannotConnect:
-                errors["base"] = "cannot_connect"
-            except InvalidAuth:
-                errors["base"] = "invalid_auth"
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected exception")
-                errors["base"] = "unknown"
-            else:
-                return self.async_create_entry(title=info["title"], data=user_input)
+            await self.async_set_external_data(
+                {"implementation": user_input["implementation"]}
+            )
+            return await self.async_step_auth()
+
+        implementations = await self.async_get_implementations()
+        if not implementations:
+            return self.async_abort(reason="missing_configuration")
 
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            step_id="pick_implementation",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("implementation"): vol.In(
+                        {impl.domain: impl.name for impl in implementations}
+                    )
+                }
+            ),
         )
 
-    async def async_step_import(self, import_info: dict[str, Any]) -> FlowResult:
-        """Handle import from configuration.yaml."""
-        return await self.async_step_user(import_info)
+    async def async_get_implementations(
+        self,
+    ) -> list[config_entry_oauth2_flow.LocalOAuth2Implementation]:
+        """Return list of OAuth2 implementations."""
+        return [
+            MoenOAuth2Implementation(
+                self.hass,
+                "moen_smart_water",
+                CLIENT_ID,
+                "",  # Client secret will be provided by application_credentials
+            )
+        ]

@@ -3,7 +3,7 @@
   "name": "Moen Smart Water (Unofficial)",
   "codeowners": ["@alexbbt"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["application_credentials"],
   "documentation": "https://github.com/alexbbt/ha-moen-smart-water",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/alexbbt/ha-moen-smart-water/issues",

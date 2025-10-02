@@ -50,13 +50,41 @@ class MoenAPI:
         self._devices: list[dict[str, Any]] | None = None
         self._temperature_definitions: dict[str, Any] | None = None
 
+    @classmethod
+    def from_token(cls, token_data: dict[str, Any]) -> MoenAPI:
+        """Create API instance from OAuth2 token data."""
+        # Create instance with dummy credentials (won't be used with OAuth2)
+        instance = cls("", "")
+
+        # Set OAuth2 tokens
+        instance.access_token = token_data.get("access_token")
+        instance.id_token = token_data.get("id_token")
+        instance.refresh_token = token_data.get("refresh_token")
+        instance.token_expiry = token_data.get("expires_at", 0)
+
+        # Update session headers with access token
+        if instance.access_token:
+            instance.session.headers.update(
+                {"Authorization": f"Bearer {instance.access_token}"}
+            )
+
+        return instance
+
     def _ensure_auth(self) -> None:
         """Ensure we have a valid authentication token."""
         if not self.access_token or time.time() > self.token_expiry:
-            _LOGGER.info("Token expired or missing, attempting refresh")
-            if self.refresh_token and not self._refresh_access_token():
-                _LOGGER.info("Refresh failed, re-authenticating with username/password")
-                self.login()
+            if self.username and self.password:
+                # Legacy username/password authentication
+                _LOGGER.info("Token expired or missing, attempting refresh")
+                if self.refresh_token and not self._refresh_access_token():
+                    _LOGGER.info(
+                        "Refresh failed, re-authenticating with username/password"
+                    )
+                    self.login()
+            else:
+                # OAuth2 authentication - tokens should be managed by Home Assistant
+                _LOGGER.error("OAuth2 token expired and no refresh mechanism available")
+                raise Exception("OAuth2 token expired - please re-authenticate")
 
     def _refresh_access_token(self) -> bool:
         """Refresh the access token using the refresh token."""
