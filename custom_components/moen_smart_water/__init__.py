@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-__version__ = "0.9.0"
+__version__ = "1.0.0"
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
