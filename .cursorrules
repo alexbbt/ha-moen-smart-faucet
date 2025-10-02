@@ -1,0 +1,34 @@
+# Cursor Rules for Moen Smart Faucet Integration
+
+## Python Environment
+- Always use the virtual environment located at `./venv/`
+- When running Python commands, scripts, or tests, activate the virtual environment first
+- Use `source ./venv/bin/activate` before running any Python-related commands
+- When suggesting terminal commands, always include the virtual environment activation
+
+## Code Style and Standards
+- Follow Python PEP 8 style guidelines
+- Use type hints where appropriate
+- Maintain consistent error handling patterns
+- Follow Home Assistant integration patterns and conventions
+
+## Project Structure
+- This is a Home Assistant custom component for Moen Smart Faucet integration
+- Main code is in `custom_components/moen_smart_water/`
+- Test scripts are in `scripts/`
+- Always consider Home Assistant compatibility when making changes
+
+## Dependencies
+- Check `requirements.txt` and `requirements-test.txt` for project dependencies
+- When adding new dependencies, update the appropriate requirements file
+- Use the virtual environment for all package installations
+
+## Testing
+- Run tests using the virtual environment
+- Use `python -m pytest` or similar testing commands within the activated venv
+- Ensure all tests pass before suggesting code changes
+
+## File Operations
+- Prefer absolute paths when possible
+- Be mindful of the Home Assistant custom component structure
+- Maintain proper imports and module organization

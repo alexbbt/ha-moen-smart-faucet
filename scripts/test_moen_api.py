@@ -13,11 +13,9 @@ Usage:
 
 import argparse
 import json
-import os
-import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 # Import the standalone API class
 from moen_api_standalone import MoenAPI
@@ -31,36 +29,36 @@ class MoenAPITester:
         self.credentials_file = Path(__file__).parent / "moen_credentials.json"
         self.api: MoenAPI | None = None
 
-    def load_credentials(self) -> Dict[str, str] | None:
+    def load_credentials(self) -> dict[str, str] | None:
         """Load credentials from file if it exists."""
         if self.credentials_file.exists():
             try:
-                with open(self.credentials_file, 'r') as f:
+                with open(self.credentials_file) as f:
                     return json.load(f)
-            except (json.JSONDecodeError, IOError) as e:
+            except (OSError, json.JSONDecodeError) as e:
                 print(f"Error loading credentials: {e}")
                 return None
         return None
 
-    def save_credentials(self, credentials: Dict[str, str]) -> None:
+    def save_credentials(self, credentials: dict[str, str]) -> None:
         """Save credentials to file."""
         try:
             with open(self.credentials_file, 'w') as f:
                 json.dump(credentials, f, indent=2)
             print(f"Credentials saved to {self.credentials_file}")
-        except IOError as e:
+        except OSError as e:
             print(f"Error saving credentials: {e}")
 
-    def save_tokens(self, tokens: Dict[str, Any]) -> None:
+    def save_tokens(self, tokens: dict[str, Any]) -> None:
         """Save OAuth tokens to file."""
         try:
             with open(self.credentials_file, 'w') as f:
                 json.dump(tokens, f, indent=2)
             print(f"OAuth tokens saved to {self.credentials_file}")
-        except IOError as e:
+        except OSError as e:
             print(f"Error saving tokens: {e}")
 
-    def get_credentials(self) -> Dict[str, str]:
+    def get_credentials(self) -> dict[str, str]:
         """Get credentials from user input or file."""
         # Try to load existing tokens first
         stored_data = self.load_credentials()
@@ -210,7 +208,7 @@ class MoenAPITester:
         try:
             user_details = self.api.get_user_details_and_temperature_definitions()
             temp_defs = user_details.get('temperatureDefinitions', {})
-            print(f"✓ Retrieved temperature definitions:")
+            print("✓ Retrieved temperature definitions:")
             for key, value in temp_defs.items():
                 print(f"  - {key}: {value}")
             return True
@@ -358,7 +356,7 @@ class MoenAPITester:
         """Helper method to test individual endpoints with consistent output."""
         print(f"\n=== Testing {endpoint_name} ===")
         try:
-            result = test_func(*args, **kwargs)
+            test_func(*args, **kwargs)
             print(f"✓ {endpoint_name} test passed")
             return True
         except Exception as e:

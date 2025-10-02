@@ -39,7 +39,7 @@ def main():
     credentials_file = Path(__file__).parent / "moen_credentials.json"
     if credentials_file.exists():
         import json
-        with open(credentials_file, 'r') as f:
+        with open(credentials_file) as f:
             creds = json.load(f)
 
         if 'access_token' in creds:
