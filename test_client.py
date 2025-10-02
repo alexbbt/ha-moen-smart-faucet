@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test script for Moen Faucet client."""
+"""Test script for Moen Smart Water client."""
 
 import asyncio
 import logging
@@ -9,7 +9,7 @@ from pathlib import Path
 # Add the custom_components directory to the path
 sys.path.insert(0, str(Path(__file__).parent / "custom_components"))
 
-from moen_faucet.client import MoenClient
+from moen_smart_water.api import MoenAPI
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 async def test_client():
     """Test the Moen client with user credentials."""
-    print("Moen Faucet Client Test")
+    print("Moen Smart Water Client Test")
     print("=" * 30)
 
     # Get credentials from user
@@ -35,7 +35,7 @@ async def test_client():
         return
 
     # Create client
-    client = MoenClient(client_id, username, password)
+    client = MoenAPI(client_id, username, password)
 
     try:
         # Test login

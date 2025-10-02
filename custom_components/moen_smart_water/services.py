@@ -1,4 +1,4 @@
-"""Services for Moen Faucet integration."""
+"""Services for Moen Smart Water integration."""
 from __future__ import annotations
 
 import logging
@@ -42,8 +42,8 @@ SET_FLOW_RATE_SERVICE_SCHEMA = vol.Schema({
 
 
 async def async_setup_services(hass: HomeAssistant) -> None:
-    """Set up the services for Moen Faucet integration."""
-    _LOGGER.info("Setting up Moen Faucet services")
+    """Set up the services for Moen Smart Water integration."""
+    _LOGGER.info("Setting up Moen Smart Water services")
 
     async def dispense_water(call: ServiceCall) -> None:
         """Service to dispense water from the faucet."""
@@ -53,7 +53,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 devices = entry_coordinator.get_all_devices()
                 if device_id in devices:
@@ -61,7 +61,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     break
 
         if not coordinator:
-            _LOGGER.error("Device %s not found in any configured Moen Faucet integration", device_id)
+            _LOGGER.error("Device %s not found in any configured Moen Smart Water integration", device_id)
             return
 
         try:
@@ -78,7 +78,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 devices = entry_coordinator.get_all_devices()
                 if device_id in devices:
@@ -86,7 +86,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     break
 
         if not coordinator:
-            _LOGGER.error("Device %s not found in any configured Moen Faucet integration", device_id)
+            _LOGGER.error("Device %s not found in any configured Moen Smart Water integration", device_id)
             return
 
         try:
@@ -101,7 +101,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 devices = entry_coordinator.get_all_devices()
                 if device_id in devices:
@@ -109,7 +109,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     break
 
         if not coordinator:
-            _LOGGER.error("Device %s not found in any configured Moen Faucet integration", device_id)
+            _LOGGER.error("Device %s not found in any configured Moen Smart Water integration", device_id)
             return
 
         try:
@@ -122,13 +122,13 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         """Service to get user profile."""
         # Find any coordinator (they all have the same user profile)
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 coordinator = entry_coordinator
                 break
 
         if not coordinator:
-            _LOGGER.error("No Moen Faucet integration found")
+            _LOGGER.error("No Moen Smart Water integration found")
             return
 
         try:
@@ -145,7 +145,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 devices = entry_coordinator.get_all_devices()
                 if device_id in devices:
@@ -153,7 +153,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     break
 
         if not coordinator:
-            _LOGGER.error("Device %s not found in any configured Moen Faucet integration", device_id)
+            _LOGGER.error("Device %s not found in any configured Moen Smart Water integration", device_id)
             return
 
         try:
@@ -171,7 +171,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_faucet", {}).items():
+        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 devices = entry_coordinator.get_all_devices()
                 if device_id in devices:
@@ -179,7 +179,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     break
 
         if not coordinator:
-            _LOGGER.error("Device %s not found in any configured Moen Faucet integration", device_id)
+            _LOGGER.error("Device %s not found in any configured Moen Smart Water integration", device_id)
             return
 
         try:
@@ -191,48 +191,48 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     # Register services
     try:
         hass.services.async_register(
-            "moen_faucet",
+            "moen_smart_water",
             "dispense_water",
             dispense_water,
             schema=DISPENSE_SERVICE_SCHEMA,
         )
 
         hass.services.async_register(
-            "moen_faucet",
+            "moen_smart_water",
             "stop_dispensing",
             stop_dispensing,
             schema=STOP_DISPENSE_SERVICE_SCHEMA,
         )
 
         hass.services.async_register(
-            "moen_faucet",
+            "moen_smart_water",
             "get_device_status",
             get_device_status,
             schema=GET_STATUS_SERVICE_SCHEMA,
         )
 
         hass.services.async_register(
-            "moen_faucet",
+            "moen_smart_water",
             "get_user_profile",
             get_user_profile,
             schema=GET_USER_PROFILE_SERVICE_SCHEMA,
         )
 
         hass.services.async_register(
-            "moen_faucet",
+            "moen_smart_water",
             "set_temperature",
             set_temperature,
             schema=SET_TEMPERATURE_SERVICE_SCHEMA,
         )
 
         hass.services.async_register(
-            "moen_faucet",
+            "moen_smart_water",
             "set_flow_rate",
             set_flow_rate,
             schema=SET_FLOW_RATE_SERVICE_SCHEMA,
         )
 
-        _LOGGER.info("Successfully registered all Moen Faucet services")
+        _LOGGER.info("Successfully registered all Moen Smart Water services")
     except Exception as err:
-        _LOGGER.error("Failed to register Moen Faucet services: %s", err)
+        _LOGGER.error("Failed to register Moen Smart Water services: %s", err)
         raise

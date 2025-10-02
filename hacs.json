@@ -1,7 +1,7 @@
 {
-  "name": "Moen Smart Faucet (Unofficial)",
+  "name": "Moen Smart Water",
   "content_in_root": false,
-  "filename": "moen_faucet",
+  "filename": "moen_smart_water",
   "country": ["US", "CA"],
   "homeassistant": "2023.1.0",
   "render_readme": true,

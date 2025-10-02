@@ -110,7 +110,7 @@ The script tests all major API endpoints documented in `../apis.md`:
 
 - **Authentication Errors**: Verify your credentials are correct
 - **Network Errors**: Check your internet connection
-- **Device Not Found**: Ensure your Moen smart faucet is connected and registered
+- **Device Not Found**: Ensure your Moen smart water device is connected and registered
 - **Permission Errors**: Make sure the script has write permissions for the credentials file
 
 ## Security Notes

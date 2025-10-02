@@ -1,7 +1,7 @@
 {
-  "domain": "moen_smart_faucet",
-  "name": "Moen Smart Faucet (Unofficial)",
-  "version": "0.7.2",
+  "domain": "moen_smart_water",
+  "name": "Moen Smart Water (Unofficial)",
+  "version": "0.8.0",
   "requirements": ["requests>=2.28.0"],
   "dependencies": [],
   "codeowners": ["@alexbbt"],

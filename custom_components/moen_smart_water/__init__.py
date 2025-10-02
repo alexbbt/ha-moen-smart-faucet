@@ -1,4 +1,4 @@
-"""Moen Smart Faucet integration for Home Assistant."""
+"""Moen Smart Water integration for Home Assistant."""
 from __future__ import annotations
 
 import logging
@@ -24,8 +24,8 @@ PLATFORMS: list[Platform] = [
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Moen Faucet from a config entry."""
-    hass.data.setdefault("moen_faucet", {})
+    """Set up Moen Smart Water from a config entry."""
+    hass.data.setdefault("moen_smart_water", {})
 
     # Initialize the API client
     api = MoenAPI(
@@ -50,7 +50,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await coordinator.async_config_entry_first_refresh()
 
     # Store the coordinator in hass data
-    hass.data["moen_faucet"][entry.entry_id] = coordinator
+    hass.data["moen_smart_water"][entry.entry_id] = coordinator
 
     # Forward the setup to the platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -66,6 +66,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:
-        hass.data["moen_faucet"].pop(entry.entry_id)
+        hass.data["moen_smart_water"].pop(entry.entry_id)
 
     return unload_ok

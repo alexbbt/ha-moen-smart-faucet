@@ -1,6 +1,6 @@
-# Moen Smart Faucet Integration for Home Assistant
+# Moen Smart Water Integration for Home Assistant
 
-This is an **unofficial** Home Assistant integration for Moen Smart Faucets (U by Moen). It allows you to control your smart faucet through Home Assistant using the official Moen cloud API.
+This is an **unofficial** Home Assistant integration for Moen Smart Water Network devices. It allows you to control your smart faucet through Home Assistant using the reverse engineered official Moen cloud API.
 
 ## ⚠️ Important Notes
 
@@ -27,19 +27,19 @@ This is an **unofficial** Home Assistant integration for Moen Smart Faucets (U b
 ### Method 1: HACS (Recommended)
 
 1. Add this repository to HACS as a custom repository
-2. Install "Moen Smart Faucet (Unofficial)" from HACS
+2. Install "Moen Smart Water (Unofficial)" from HACS
 3. Restart Home Assistant
 
 ### Method 2: Manual Installation
 
-1. Copy the `custom_components/moen_faucet` folder to your Home Assistant `custom_components` directory
+1. Copy the `custom_components/moen_smart_water` folder to your Home Assistant `custom_components` directory
 2. Restart Home Assistant
 
 ## Configuration
 
 1. Go to **Settings** → **Devices & Services**
 2. Click **Add Integration**
-3. Search for "Moen Smart Faucet (Unofficial)"
+3. Search for "Moen Smart Water (Unofficial)"
 4. Enter your Moen account credentials:
    - **Client ID**: Your Moen app client ID (default: "moen_mobile_app" - see troubleshooting)
    - **Username**: Your Moen account email
@@ -82,19 +82,19 @@ You can also control the faucet programmatically using services:
 
 ```yaml
 # Dispense water
-service: moen_faucet.dispense_water
+service: moen_smart_water.dispense_water
 data:
   device_id: "your_device_id"
   volume_ml: 500
   timeout: 120
 
 # Stop dispensing
-service: moen_faucet.stop_dispensing
+service: moen_smart_water.stop_dispensing
 data:
   device_id: "your_device_id"
 
 # Get device status
-service: moen_faucet.get_device_status
+service: moen_smart_water.get_device_status
 data:
   device_id: "your_device_id"
 ```
@@ -109,7 +109,7 @@ Example automation to dispense water when motion is detected:
     - platform: motion
       entity_id: binary_sensor.motion_sensor
   action:
-    - service: moen_faucet.dispense_water
+    - service: moen_smart_water.dispense_water
       data:
         device_id: "your_device_id"
         volume_ml: 250
@@ -139,7 +139,7 @@ Enable debug logging to troubleshoot issues:
 logger:
   default: info
   logs:
-    custom_components.moen_faucet: debug
+    custom_components.moen_smart_water: debug
 ```
 
 ## API Endpoints

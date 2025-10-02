@@ -1,4 +1,4 @@
-"""Data update coordinator for Moen Faucet integration."""
+"""Data update coordinator for Moen Smart Water integration."""
 from __future__ import annotations
 
 import logging
@@ -30,7 +30,7 @@ class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         super().__init__(
             hass,
             _LOGGER,
-            name="moen_faucet",
+            name="moen_smart_water",
             update_interval=SCAN_INTERVAL,
         )
 

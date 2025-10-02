@@ -1,4 +1,4 @@
-"""Config flow for Moen Faucet integration."""
+"""Config flow for Moen Smart Water integration."""
 from __future__ import annotations
 
 import logging
@@ -59,7 +59,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
             device_count = 0
 
         return {
-            "title": f"Moen Faucet ({user_profile.get('firstName', 'User')} - {device_count} devices)",
+            "title": f"Moen Smart Water ({user_profile.get('firstName', 'User')} - {device_count} devices)",
             "user_profile": user_profile,
             "device_count": device_count
         }
@@ -71,8 +71,8 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
         raise CannotConnect(f"Failed to connect to Moen API: {err}") from err
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain="moen_faucet"):
-    """Handle a config flow for Moen Faucet."""
+class ConfigFlow(config_entries.ConfigFlow, domain="moen_smart_water"):
+    """Handle a config flow for Moen Smart Water."""
 
     VERSION = 1
 

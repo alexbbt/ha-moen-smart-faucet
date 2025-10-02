@@ -1,4 +1,4 @@
-"""Select platform for Moen Faucet integration."""
+"""Select platform for Moen Smart Water integration."""
 from __future__ import annotations
 
 import logging
@@ -21,22 +21,22 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Moen Faucet select entities."""
-    coordinator: MoenDataUpdateCoordinator = hass.data["moen_faucet"][config_entry.entry_id]
+    """Set up Moen Smart Water select entities."""
+    coordinator: MoenDataUpdateCoordinator = hass.data["moen_smart_water"][config_entry.entry_id]
 
     # Get devices and create entities for each
     devices = coordinator.get_all_devices()
 
     entities = []
     for device_id, device in devices.items():
-        device_name = device.get("name", f"Moen Faucet {device_id}")
+        device_name = device.get("name", f"Moen Smart Water {device_id}")
         entities.append(MoenTemperatureSelect(coordinator, device_id, device_name))
 
     async_add_entities(entities)
 
 
 class MoenTemperatureSelect(CoordinatorEntity, SelectEntity):
-    """Select entity for Moen Faucet temperature presets."""
+    """Select entity for Moen Smart Water temperature presets."""
 
     def __init__(
         self,
@@ -51,10 +51,10 @@ class MoenTemperatureSelect(CoordinatorEntity, SelectEntity):
         self._attr_unique_id = f"{device_id}_temperature_preset"
         self._attr_name = "Temperature Preset"
         self._attr_has_entity_name = True
-        
+
         # Device information
         self._attr_device_info = DeviceInfo(
-            identifiers={("moen_faucet", device_id)},
+            identifiers={("moen_smart_water", device_id)},
             name=device_name,
             manufacturer="Moen",
             model="Smart Faucet",
@@ -75,7 +75,7 @@ class MoenTemperatureSelect(CoordinatorEntity, SelectEntity):
     def device_info(self) -> dict[str, Any]:
         """Return device information."""
         return {
-            "identifiers": {("moen_faucet", self._device_id)},
+            "identifiers": {("moen_smart_water", self._device_id)},
             "name": self._device_name,
             "manufacturer": "Moen",
             "model": "Smart Faucet",
