@@ -185,6 +185,63 @@ This integration is based on reverse-engineering the official Moen mobile app. I
 2. Create a new issue with detailed information
 3. Include relevant logs and network captures (sanitized)
 
+### Development Setup
+
+This project uses pre-commit hooks to ensure code quality and consistency. To set up the development environment:
+
+#### Create and activate virtual environment
+```bash
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+# venv\Scripts\activate
+```
+
+#### Install pre-commit
+```bash
+pip install pre-commit
+```
+
+#### Install git hooks
+```bash
+pre-commit install
+```
+
+#### Run pre-commit on all files
+```bash
+pre-commit run --all-files
+```
+
+The pre-commit hooks will automatically:
+- Run **ruff** for code linting and formatting
+- Run **mypy** for type checking
+- Ensure code follows the project's style guidelines
+
+> [!TIP]
+> Pre-commit hooks will run automatically on every commit. If you want to commit code that doesn't pass the checks, use `git commit --no-verify` (not recommended for regular development).
+
+#### Manual Testing
+You can also run the linting tools manually:
+
+```bash
+# Make sure virtual environment is activated
+source venv/bin/activate  # On macOS/Linux
+# venv\Scripts\activate  # On Windows
+
+# Install test dependencies
+pip install -r requirements-test.txt
+
+# Run ruff (code linting)
+ruff check custom_components
+
+# Run mypy (type checking)
+mypy custom_components
+```
+
 ## Disclaimer
 
 This integration is not officially supported by Moen. Use at your own risk. The authors are not responsible for any damage or issues that may arise from using this integration.

@@ -60,12 +60,13 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     async def dispense_water(call: ServiceCall) -> None:
         """Service to dispense water from the faucet."""
         device_id = call.data["device_id"]
-        volume_ml = call.data["volume_ml"]
-        timeout = call.data["timeout"]
+        # Note: volume_ml and timeout are available but not used in current implementation
+        # call.data["volume_ml"]
+        # call.data["timeout"]
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get(
+        for _entry_id, entry_coordinator in hass.data.get(
             "moen_smart_water", {}
         ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
@@ -95,7 +96,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get(
+        for _entry_id, entry_coordinator in hass.data.get(
             "moen_smart_water", {}
         ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
@@ -127,7 +128,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get(
+        for _entry_id, entry_coordinator in hass.data.get(
             "moen_smart_water", {}
         ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
@@ -153,7 +154,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         """Service to get user profile."""
         # Find any coordinator (they all have the same user profile)
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get(
+        for _entry_id, entry_coordinator in hass.data.get(
             "moen_smart_water", {}
         ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
@@ -180,7 +181,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get(
+        for _entry_id, entry_coordinator in hass.data.get(
             "moen_smart_water", {}
         ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
@@ -216,7 +217,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get(
+        for _entry_id, entry_coordinator in hass.data.get(
             "moen_smart_water", {}
         ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
