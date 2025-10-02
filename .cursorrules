@@ -1,6 +1,7 @@
 # Cursor Rules for Moen Smart Faucet Integration
 
 ## Python Environment
+- Always use Python 3.11 (compatible with Home Assistant)
 - Always use the virtual environment located at `./venv/`
 - When running Python commands, scripts, or tests, activate the virtual environment first
 - Use `source ./venv/bin/activate` before running any Python-related commands
