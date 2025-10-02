@@ -10,24 +10,24 @@ class TestAPIStructure:
 
     def test_api_init(self):
         """Test API initialization."""
-        api = MoenAPI("test_client_id", "test@example.com", "password")
+        api = MoenAPI("test@example.com", "password")
 
         assert api.username == "test@example.com"
         assert api.password == "password"
-        assert api.client_id == "test_client_id"
+        assert api.client_id == "6qn9pep31dglq6ed4fvlq6rp5t"
         assert api.access_token is None
         assert api.refresh_token is None
 
     def test_api_session_headers(self):
         """Test API session headers are set correctly."""
-        api = MoenAPI("test_client_id", "test@example.com", "password")
+        api = MoenAPI("test@example.com", "password")
 
         assert "User-Agent" in api.session.headers
         assert api.session.headers["User-Agent"] == "Smartwater-iOS-prod-3.39.0"
 
     def test_api_cached_data_initialization(self):
         """Test API cached data is initialized correctly."""
-        api = MoenAPI("test_client_id", "test@example.com", "password")
+        api = MoenAPI("test@example.com", "password")
 
         assert api._user_profile is None
         assert api._locations is None
@@ -36,7 +36,7 @@ class TestAPIStructure:
 
     def test_api_methods_exist(self):
         """Test that API methods exist."""
-        api = MoenAPI("test_client_id", "test@example.com", "password")
+        api = MoenAPI("test@example.com", "password")
 
         # Check that key methods exist
         assert hasattr(api, "login")
