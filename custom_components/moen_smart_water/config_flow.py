@@ -1,4 +1,5 @@
 """Config flow for Moen Smart Water integration."""
+
 from __future__ import annotations
 
 import logging
@@ -46,7 +47,10 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
 
         # Test the /users/me endpoint to verify authentication works
         user_profile = await hass.async_add_executor_job(api.get_user_profile)
-        _LOGGER.info("Successfully authenticated and retrieved user profile: %s", user_profile.get("email", "unknown"))
+        _LOGGER.info(
+            "Successfully authenticated and retrieved user profile: %s",
+            user_profile.get("email", "unknown"),
+        )
 
         # Try to get devices to see if we can find any
         try:
@@ -54,14 +58,16 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
             device_count = len(devices) if devices else 0
             _LOGGER.info("Found %d devices", device_count)
         except Exception as device_err:
-            _LOGGER.warning("Could not retrieve devices, but authentication works: %s", device_err)
+            _LOGGER.warning(
+                "Could not retrieve devices, but authentication works: %s", device_err
+            )
             devices = []
             device_count = 0
 
         return {
             "title": f"Moen Smart Water ({user_profile.get('firstName', 'User')} - {device_count} devices)",
             "user_profile": user_profile,
-            "device_count": device_count
+            "device_count": device_count,
         }
 
     except Exception as err:

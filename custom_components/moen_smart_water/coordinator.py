@@ -1,4 +1,5 @@
 """Data update coordinator for Moen Smart Water integration."""
+
 from __future__ import annotations
 
 import logging
@@ -38,10 +39,15 @@ class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Update data via library."""
         try:
             # Get fresh device list
-            devices = await self.hass.async_add_executor_job(self.api.get_cached_devices)
+            devices = await self.hass.async_add_executor_job(
+                self.api.get_cached_devices
+            )
 
             # Update device cache
-            self._devices = {device.get("clientId", device.get("id", "")): device for device in devices}
+            self._devices = {
+                device.get("clientId", device.get("id", "")): device
+                for device in devices
+            }
 
             # Get device shadows for all devices
             device_shadows = {}
@@ -52,7 +58,9 @@ class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     )
                     device_shadows[device_id] = shadow
                 except Exception as err:
-                    _LOGGER.warning("Failed to get shadow for device %s: %s", device_id, err)
+                    _LOGGER.warning(
+                        "Failed to get shadow for device %s: %s", device_id, err
+                    )
                     # Use empty shadow if we can't get it
                     device_shadows[device_id] = {}
 

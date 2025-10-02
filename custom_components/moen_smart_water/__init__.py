@@ -1,4 +1,5 @@
 """Moen Smart Water integration for Home Assistant."""
+
 from __future__ import annotations
 
 import logging
@@ -38,7 +39,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         await hass.async_add_executor_job(api.login)
         user_profile = await hass.async_add_executor_job(api.get_user_profile)
-        _LOGGER.info("Successfully connected to Moen API for user: %s", user_profile.get("email", "unknown"))
+        _LOGGER.info(
+            "Successfully connected to Moen API for user: %s",
+            user_profile.get("email", "unknown"),
+        )
     except Exception as err:
         _LOGGER.error("Failed to connect to Moen API: %s", err)
         return False

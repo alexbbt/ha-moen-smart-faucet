@@ -1,4 +1,5 @@
 """Valve platform for Moen Smart Water integration."""
+
 from __future__ import annotations
 
 import logging
@@ -22,11 +23,17 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Moen Smart Water valve entities."""
-    coordinator: MoenDataUpdateCoordinator = hass.data["moen_smart_water"][config_entry.entry_id]
+    coordinator: MoenDataUpdateCoordinator = hass.data["moen_smart_water"][
+        config_entry.entry_id
+    ]
 
     # Get devices and create entities for each
     devices = coordinator.get_all_devices()
-    _LOGGER.info("Setting up valve entities. Found %d devices: %s", len(devices), list(devices.keys()))
+    _LOGGER.info(
+        "Setting up valve entities. Found %d devices: %s",
+        len(devices),
+        list(devices.keys()),
+    )
 
     entities = []
     for device_id, device in devices.items():
@@ -42,10 +49,7 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
     """Valve entity for Moen Smart Water water control."""
 
     def __init__(
-        self,
-        coordinator: MoenDataUpdateCoordinator,
-        device_id: str,
-        device_name: str
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
     ) -> None:
         """Initialize the valve entity."""
         super().__init__(coordinator)
@@ -57,11 +61,11 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
 
         # Valve features
         self._attr_supported_features = (
-            ValveEntityFeature.OPEN |
-            ValveEntityFeature.CLOSE |
-            ValveEntityFeature.SET_VALVE_POSITION |
-            ValveEntityFeature.STOP |
-            ValveEntityFeature.TOGGLE
+            ValveEntityFeature.OPEN
+            | ValveEntityFeature.CLOSE
+            | ValveEntityFeature.SET_VALVE_POSITION
+            | ValveEntityFeature.STOP
+            | ValveEntityFeature.TOGGLE
         )
 
         # Valve state
@@ -130,12 +134,14 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             self._attr_temperature = state.get("temperature", 20.0)
 
             # Update extra state attributes
-            self._attr_extra_state_attributes.update({
-                "last_dispense_volume": state.get("lastDispenseVolume", 0),
-                "command": command,
-                "flow_rate": self._attr_valve_position,
-                "temperature": self._attr_temperature,
-            })
+            self._attr_extra_state_attributes.update(
+                {
+                    "last_dispense_volume": state.get("lastDispenseVolume", 0),
+                    "command": command,
+                    "flow_rate": self._attr_valve_position,
+                    "temperature": self._attr_temperature,
+                }
+            )
 
         self.async_write_ha_state()
 
@@ -152,7 +158,7 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
                 self.coordinator.api.start_water_flow,
                 self._device_id,
                 self._attr_preset_mode,
-                int(self._attr_valve_position)
+                int(self._attr_valve_position),
             )
 
             # After successful API call, valve is now open
@@ -164,7 +170,9 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             # Reset state on error
             self._attr_is_opening = False
             self._attr_is_closed = True
-            _LOGGER.error("Failed to open valve for device %s: %s", self._device_id, err)
+            _LOGGER.error(
+                "Failed to open valve for device %s: %s", self._device_id, err
+            )
 
     async def async_close_valve(self, **kwargs: Any) -> None:
         """Close the valve (stop water flow)."""
@@ -176,8 +184,7 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             self.async_write_ha_state()
 
             await self.hass.async_add_executor_job(
-                self.coordinator.api.stop_water_flow,
-                self._device_id
+                self.coordinator.api.stop_water_flow, self._device_id
             )
 
             # After successful API call, valve is now closed
@@ -189,7 +196,9 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             # Reset state on error
             self._attr_is_closing = False
             self._attr_is_closed = True
-            _LOGGER.error("Failed to close valve for device %s: %s", self._device_id, err)
+            _LOGGER.error(
+                "Failed to close valve for device %s: %s", self._device_id, err
+            )
 
     async def async_stop_valve(self, **kwargs: Any) -> None:
         """Stop the valve (same as close for faucet)."""
@@ -207,14 +216,18 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
         try:
             # Update flow rate
             await self.hass.async_add_executor_job(
-                self.coordinator.api.set_flow_rate,
-                self._device_id,
-                int(position)
+                self.coordinator.api.set_flow_rate, self._device_id, int(position)
             )
             self._attr_valve_position = position
-            _LOGGER.info("Set valve position to %d%% for device %s", int(position), self._device_id)
+            _LOGGER.info(
+                "Set valve position to %d%% for device %s",
+                int(position),
+                self._device_id,
+            )
         except Exception as err:
-            _LOGGER.error("Failed to set valve position for device %s: %s", self._device_id, err)
+            _LOGGER.error(
+                "Failed to set valve position for device %s: %s", self._device_id, err
+            )
 
     async def async_set_temperature(self, temperature: float) -> None:
         """Set the water temperature."""
@@ -223,12 +236,16 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
                 self.coordinator.api.set_specific_temperature,
                 self._device_id,
                 temperature,
-                int(self._attr_valve_position)
+                int(self._attr_valve_position),
             )
             self._attr_temperature = temperature
-            _LOGGER.info("Set temperature to %.1f°C for device %s", temperature, self._device_id)
+            _LOGGER.info(
+                "Set temperature to %.1f°C for device %s", temperature, self._device_id
+            )
         except Exception as err:
-            _LOGGER.error("Failed to set temperature for device %s: %s", self._device_id, err)
+            _LOGGER.error(
+                "Failed to set temperature for device %s: %s", self._device_id, err
+            )
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set the temperature preset mode."""
@@ -238,25 +255,29 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
                 await self.hass.async_add_executor_job(
                     self.coordinator.api.set_coldest,
                     self._device_id,
-                    int(self._attr_valve_position)
+                    int(self._attr_valve_position),
                 )
             elif preset_mode == "hottest":
                 await self.hass.async_add_executor_job(
                     self.coordinator.api.set_hottest,
                     self._device_id,
-                    int(self._attr_valve_position)
+                    int(self._attr_valve_position),
                 )
             elif preset_mode == "warm":
                 await self.hass.async_add_executor_job(
                     self.coordinator.api.set_warm,
                     self._device_id,
-                    int(self._attr_valve_position)
+                    int(self._attr_valve_position),
                 )
 
             self._attr_preset_mode = preset_mode
-            _LOGGER.info("Set preset mode to %s for device %s", preset_mode, self._device_id)
+            _LOGGER.info(
+                "Set preset mode to %s for device %s", preset_mode, self._device_id
+            )
         except Exception as err:
-            _LOGGER.error("Failed to set preset mode for device %s: %s", self._device_id, err)
+            _LOGGER.error(
+                "Failed to set preset mode for device %s: %s", self._device_id, err
+            )
 
     @property
     def preset_modes(self) -> list[str]:

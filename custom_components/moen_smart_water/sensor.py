@@ -1,4 +1,5 @@
 """Sensor platform for Moen Smart Water integration."""
+
 from __future__ import annotations
 
 import logging
@@ -21,50 +22,60 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Moen Smart Water sensor entities."""
-    coordinator: MoenDataUpdateCoordinator = hass.data["moen_smart_water"][config_entry.entry_id]
+    coordinator: MoenDataUpdateCoordinator = hass.data["moen_smart_water"][
+        config_entry.entry_id
+    ]
 
     # Get devices and create entities for each
     devices = coordinator.get_all_devices()
-    _LOGGER.info("Setting up sensor entities. Found %d devices: %s", len(devices), list(devices.keys()))
+    _LOGGER.info(
+        "Setting up sensor entities. Found %d devices: %s",
+        len(devices),
+        list(devices.keys()),
+    )
 
     entities = []
     for device_id, device in devices.items():
         device_name = device.get("name", f"Moen Smart Water {device_id}")
-        _LOGGER.info("Creating sensor entities for device %s: %s", device_id, device_name)
+        _LOGGER.info(
+            "Creating sensor entities for device %s: %s", device_id, device_name
+        )
 
-        entities.extend([
-            MoenFaucetStateSensor(coordinator, device_id, device_name),
-            MoenLastDispenseVolumeSensor(coordinator, device_id, device_name),
-            MoenCloudConnectedSensor(coordinator, device_id, device_name),
-            MoenTemperatureSensor(coordinator, device_id, device_name),
-            MoenFlowRateSensor(coordinator, device_id, device_name),
-            # Debug sensors
-            MoenApiStatusSensor(coordinator, device_id, device_name),
-            MoenLastUpdateSensor(coordinator, device_id, device_name),
-            # WiFi and connectivity sensors
-            MoenWifiNetworkSensor(coordinator, device_id, device_name),
-            MoenWifiRssiSensor(coordinator, device_id, device_name),
-            MoenWifiConnectedSensor(coordinator, device_id, device_name),
-            # Battery and power sensors
-            MoenBatteryPercentageSensor(coordinator, device_id, device_name),
-            MoenPowerSourceSensor(coordinator, device_id, device_name),
-            MoenBatterySavingLevelSensor(coordinator, device_id, device_name),
-            # Firmware and device info
-            MoenFirmwareVersionSensor(coordinator, device_id, device_name),
-            MoenLastConnectSensor(coordinator, device_id, device_name),
-            # Temperature learning sensors
-            MoenLearnedMinTempSensor(coordinator, device_id, device_name),
-            MoenLearnedMaxTempSensor(coordinator, device_id, device_name),
-            MoenAssemblyAirTempSensor(coordinator, device_id, device_name),
-            # Device configuration sensors
-            MoenDefaultFlowRateSensor(coordinator, device_id, device_name),
-            MoenMaxFlowRateSensor(coordinator, device_id, device_name),
-            MoenSafetyModeEnabledSensor(coordinator, device_id, device_name),
-            MoenChildModeEnabledSensor(coordinator, device_id, device_name),
-            # Additional state sensors
-            MoenIsFreezingSensor(coordinator, device_id, device_name),
-            MoenTemperatureGoalSensor(coordinator, device_id, device_name),
-        ])
+        entities.extend(
+            [
+                MoenFaucetStateSensor(coordinator, device_id, device_name),
+                MoenLastDispenseVolumeSensor(coordinator, device_id, device_name),
+                MoenCloudConnectedSensor(coordinator, device_id, device_name),
+                MoenTemperatureSensor(coordinator, device_id, device_name),
+                MoenFlowRateSensor(coordinator, device_id, device_name),
+                # Debug sensors
+                MoenApiStatusSensor(coordinator, device_id, device_name),
+                MoenLastUpdateSensor(coordinator, device_id, device_name),
+                # WiFi and connectivity sensors
+                MoenWifiNetworkSensor(coordinator, device_id, device_name),
+                MoenWifiRssiSensor(coordinator, device_id, device_name),
+                MoenWifiConnectedSensor(coordinator, device_id, device_name),
+                # Battery and power sensors
+                MoenBatteryPercentageSensor(coordinator, device_id, device_name),
+                MoenPowerSourceSensor(coordinator, device_id, device_name),
+                MoenBatterySavingLevelSensor(coordinator, device_id, device_name),
+                # Firmware and device info
+                MoenFirmwareVersionSensor(coordinator, device_id, device_name),
+                MoenLastConnectSensor(coordinator, device_id, device_name),
+                # Temperature learning sensors
+                MoenLearnedMinTempSensor(coordinator, device_id, device_name),
+                MoenLearnedMaxTempSensor(coordinator, device_id, device_name),
+                MoenAssemblyAirTempSensor(coordinator, device_id, device_name),
+                # Device configuration sensors
+                MoenDefaultFlowRateSensor(coordinator, device_id, device_name),
+                MoenMaxFlowRateSensor(coordinator, device_id, device_name),
+                MoenSafetyModeEnabledSensor(coordinator, device_id, device_name),
+                MoenChildModeEnabledSensor(coordinator, device_id, device_name),
+                # Additional state sensors
+                MoenIsFreezingSensor(coordinator, device_id, device_name),
+                MoenTemperatureGoalSensor(coordinator, device_id, device_name),
+            ]
+        )
 
     _LOGGER.info("Adding %d sensor entities", len(entities))
     async_add_entities(entities)
@@ -73,7 +84,9 @@ async def async_setup_entry(
 class MoenSensorBase(CoordinatorEntity, SensorEntity):
     """Base class for Moen sensor entities."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._device_id = device_id
@@ -92,7 +105,9 @@ class MoenSensorBase(CoordinatorEntity, SensorEntity):
 class MoenFaucetStateSensor(MoenSensorBase):
     """Sensor for faucet state."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the faucet state sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_faucet_state"
@@ -119,7 +134,9 @@ class MoenFaucetStateSensor(MoenSensorBase):
 class MoenLastDispenseVolumeSensor(MoenSensorBase):
     """Sensor for last dispense volume."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the last dispense volume sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_last_dispense_volume"
@@ -140,7 +157,9 @@ class MoenLastDispenseVolumeSensor(MoenSensorBase):
 class MoenCloudConnectedSensor(MoenSensorBase):
     """Sensor for cloud connection status."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the cloud connected sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_cloud_connected"
@@ -160,7 +179,9 @@ class MoenCloudConnectedSensor(MoenSensorBase):
 class MoenTemperatureSensor(MoenSensorBase):
     """Sensor for current water temperature."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the temperature sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_temperature"
@@ -181,7 +202,9 @@ class MoenTemperatureSensor(MoenSensorBase):
 class MoenFlowRateSensor(MoenSensorBase):
     """Sensor for current flow rate."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the flow rate sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_flow_rate"
@@ -202,7 +225,9 @@ class MoenFlowRateSensor(MoenSensorBase):
 class MoenApiStatusSensor(MoenSensorBase):
     """Debug sensor for API status."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the API status sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_api_status"
@@ -230,7 +255,9 @@ class MoenApiStatusSensor(MoenSensorBase):
 class MoenLastUpdateSensor(MoenSensorBase):
     """Debug sensor for last update time."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the last update sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_last_update"
@@ -250,7 +277,9 @@ class MoenLastUpdateSensor(MoenSensorBase):
 class MoenWifiNetworkSensor(MoenSensorBase):
     """Sensor for WiFi network name."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the WiFi network sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_wifi_network"
@@ -269,7 +298,9 @@ class MoenWifiNetworkSensor(MoenSensorBase):
 class MoenWifiRssiSensor(MoenSensorBase):
     """Sensor for WiFi signal strength."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the WiFi RSSI sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_wifi_rssi"
@@ -289,7 +320,9 @@ class MoenWifiRssiSensor(MoenSensorBase):
 class MoenWifiConnectedSensor(MoenSensorBase):
     """Sensor for WiFi connection status."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the WiFi connected sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_wifi_connected"
@@ -301,7 +334,9 @@ class MoenWifiConnectedSensor(MoenSensorBase):
         shadow = self.coordinator.get_device_shadow(self._device_id)
         if shadow:
             state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = "connected" if state.get("connected", False) else "disconnected"
+            self._attr_native_value = (
+                "connected" if state.get("connected", False) else "disconnected"
+            )
         self.async_write_ha_state()
 
 
@@ -309,7 +344,9 @@ class MoenWifiConnectedSensor(MoenSensorBase):
 class MoenBatteryPercentageSensor(MoenSensorBase):
     """Sensor for battery percentage."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the battery percentage sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_battery_percentage"
@@ -329,7 +366,9 @@ class MoenBatteryPercentageSensor(MoenSensorBase):
 class MoenPowerSourceSensor(MoenSensorBase):
     """Sensor for power source."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the power source sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_power_source"
@@ -348,7 +387,9 @@ class MoenPowerSourceSensor(MoenSensorBase):
 class MoenBatterySavingLevelSensor(MoenSensorBase):
     """Sensor for battery saving level."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the battery saving level sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_battery_saving_level"
@@ -368,7 +409,9 @@ class MoenBatterySavingLevelSensor(MoenSensorBase):
 class MoenFirmwareVersionSensor(MoenSensorBase):
     """Sensor for firmware version."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the firmware version sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_firmware_version"
@@ -387,7 +430,9 @@ class MoenFirmwareVersionSensor(MoenSensorBase):
 class MoenLastConnectSensor(MoenSensorBase):
     """Sensor for last connection time."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the last connect sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_last_connect"
@@ -402,6 +447,7 @@ class MoenLastConnectSensor(MoenSensorBase):
             last_connect = state.get("lastConnect")
             if last_connect:
                 from datetime import datetime
+
                 try:
                     # Convert timestamp to ISO format
                     dt = datetime.fromtimestamp(last_connect / 1000)
@@ -417,7 +463,9 @@ class MoenLastConnectSensor(MoenSensorBase):
 class MoenLearnedMinTempSensor(MoenSensorBase):
     """Sensor for learned minimum temperature."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the learned min temp sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_learned_min_temp"
@@ -437,7 +485,9 @@ class MoenLearnedMinTempSensor(MoenSensorBase):
 class MoenLearnedMaxTempSensor(MoenSensorBase):
     """Sensor for learned maximum temperature."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the learned max temp sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_learned_max_temp"
@@ -457,7 +507,9 @@ class MoenLearnedMaxTempSensor(MoenSensorBase):
 class MoenAssemblyAirTempSensor(MoenSensorBase):
     """Sensor for assembly air temperature."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the assembly air temp sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_assembly_air_temp"
@@ -478,7 +530,9 @@ class MoenAssemblyAirTempSensor(MoenSensorBase):
 class MoenDefaultFlowRateSensor(MoenSensorBase):
     """Sensor for default flow rate."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the default flow rate sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_default_flow_rate"
@@ -498,7 +552,9 @@ class MoenDefaultFlowRateSensor(MoenSensorBase):
 class MoenMaxFlowRateSensor(MoenSensorBase):
     """Sensor for maximum flow rate."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the max flow rate sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_max_flow_rate"
@@ -518,7 +574,9 @@ class MoenMaxFlowRateSensor(MoenSensorBase):
 class MoenSafetyModeEnabledSensor(MoenSensorBase):
     """Sensor for safety mode enabled status."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the safety mode enabled sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_safety_mode_enabled"
@@ -530,14 +588,18 @@ class MoenSafetyModeEnabledSensor(MoenSensorBase):
         shadow = self.coordinator.get_device_shadow(self._device_id)
         if shadow:
             state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = "enabled" if state.get("safetyModeEnabled", False) else "disabled"
+            self._attr_native_value = (
+                "enabled" if state.get("safetyModeEnabled", False) else "disabled"
+            )
         self.async_write_ha_state()
 
 
 class MoenChildModeEnabledSensor(MoenSensorBase):
     """Sensor for child mode enabled status."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the child mode enabled sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_child_mode_enabled"
@@ -549,7 +611,9 @@ class MoenChildModeEnabledSensor(MoenSensorBase):
         shadow = self.coordinator.get_device_shadow(self._device_id)
         if shadow:
             state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = "enabled" if state.get("childModeEnabled", False) else "disabled"
+            self._attr_native_value = (
+                "enabled" if state.get("childModeEnabled", False) else "disabled"
+            )
         self.async_write_ha_state()
 
 
@@ -557,7 +621,9 @@ class MoenChildModeEnabledSensor(MoenSensorBase):
 class MoenIsFreezingSensor(MoenSensorBase):
     """Sensor for freezing detection."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the is freezing sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_is_freezing"
@@ -576,7 +642,9 @@ class MoenIsFreezingSensor(MoenSensorBase):
 class MoenTemperatureGoalSensor(MoenSensorBase):
     """Sensor for temperature goal."""
 
-    def __init__(self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str) -> None:
+    def __init__(
+        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+    ) -> None:
         """Initialize the temperature goal sensor."""
         super().__init__(coordinator, device_id, device_name)
         self._attr_unique_id = f"{device_id}_temperature_goal"

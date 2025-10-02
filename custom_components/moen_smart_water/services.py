@@ -1,4 +1,5 @@
 """Services for Moen Smart Water integration."""
+
 from __future__ import annotations
 
 import logging
@@ -12,32 +13,44 @@ from .coordinator import MoenDataUpdateCoordinator
 _LOGGER = logging.getLogger(__name__)
 
 # Service schemas
-DISPENSE_SERVICE_SCHEMA = vol.Schema({
-    vol.Required("device_id"): cv.string,
-    vol.Optional("volume_ml", default=250): vol.All(int, vol.Range(min=50, max=2000)),
-    vol.Optional("timeout", default=120): vol.All(int, vol.Range(min=10, max=300)),
-})
+DISPENSE_SERVICE_SCHEMA = vol.Schema(
+    {
+        vol.Required("device_id"): cv.string,
+        vol.Optional("volume_ml", default=250): vol.All(
+            int, vol.Range(min=50, max=2000)
+        ),
+        vol.Optional("timeout", default=120): vol.All(int, vol.Range(min=10, max=300)),
+    }
+)
 
-STOP_DISPENSE_SERVICE_SCHEMA = vol.Schema({
-    vol.Required("device_id"): cv.string,
-})
+STOP_DISPENSE_SERVICE_SCHEMA = vol.Schema(
+    {
+        vol.Required("device_id"): cv.string,
+    }
+)
 
-GET_STATUS_SERVICE_SCHEMA = vol.Schema({
-    vol.Required("device_id"): cv.string,
-})
+GET_STATUS_SERVICE_SCHEMA = vol.Schema(
+    {
+        vol.Required("device_id"): cv.string,
+    }
+)
 
 GET_USER_PROFILE_SERVICE_SCHEMA = vol.Schema({})
 
-SET_TEMPERATURE_SERVICE_SCHEMA = vol.Schema({
-    vol.Required("device_id"): cv.string,
-    vol.Required("temperature"): vol.All(float, vol.Range(min=0, max=100)),
-    vol.Optional("flow_rate", default=100): vol.All(int, vol.Range(min=0, max=100)),
-})
+SET_TEMPERATURE_SERVICE_SCHEMA = vol.Schema(
+    {
+        vol.Required("device_id"): cv.string,
+        vol.Required("temperature"): vol.All(float, vol.Range(min=0, max=100)),
+        vol.Optional("flow_rate", default=100): vol.All(int, vol.Range(min=0, max=100)),
+    }
+)
 
-SET_FLOW_RATE_SERVICE_SCHEMA = vol.Schema({
-    vol.Required("device_id"): cv.string,
-    vol.Required("flow_rate"): vol.All(int, vol.Range(min=0, max=100)),
-})
+SET_FLOW_RATE_SERVICE_SCHEMA = vol.Schema(
+    {
+        vol.Required("device_id"): cv.string,
+        vol.Required("flow_rate"): vol.All(int, vol.Range(min=0, max=100)),
+    }
+)
 
 
 async def async_setup_services(hass: HomeAssistant) -> None:
@@ -52,7 +65,9 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
+        for entry_id, entry_coordinator in hass.data.get(
+            "moen_smart_water", {}
+        ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 devices = entry_coordinator.get_all_devices()
                 if device_id in devices:
@@ -60,7 +75,10 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     break
 
         if not coordinator:
-            _LOGGER.error("Device %s not found in any configured Moen Smart Water integration", device_id)
+            _LOGGER.error(
+                "Device %s not found in any configured Moen Smart Water integration",
+                device_id,
+            )
             return
 
         try:
@@ -77,7 +95,9 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
+        for entry_id, entry_coordinator in hass.data.get(
+            "moen_smart_water", {}
+        ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 devices = entry_coordinator.get_all_devices()
                 if device_id in devices:
@@ -85,14 +105,21 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     break
 
         if not coordinator:
-            _LOGGER.error("Device %s not found in any configured Moen Smart Water integration", device_id)
+            _LOGGER.error(
+                "Device %s not found in any configured Moen Smart Water integration",
+                device_id,
+            )
             return
 
         try:
-            await hass.async_add_executor_job(coordinator.api.stop_water_flow, device_id)
+            await hass.async_add_executor_job(
+                coordinator.api.stop_water_flow, device_id
+            )
             _LOGGER.info("Stopped dispensing from device %s", device_id)
         except Exception as err:
-            _LOGGER.error("Failed to stop dispensing from device %s: %s", device_id, err)
+            _LOGGER.error(
+                "Failed to stop dispensing from device %s: %s", device_id, err
+            )
 
     async def get_device_status(call: ServiceCall) -> None:
         """Service to get device status."""
@@ -100,7 +127,9 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
+        for entry_id, entry_coordinator in hass.data.get(
+            "moen_smart_water", {}
+        ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 devices = entry_coordinator.get_all_devices()
                 if device_id in devices:
@@ -108,7 +137,10 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     break
 
         if not coordinator:
-            _LOGGER.error("Device %s not found in any configured Moen Smart Water integration", device_id)
+            _LOGGER.error(
+                "Device %s not found in any configured Moen Smart Water integration",
+                device_id,
+            )
             return
 
         try:
@@ -121,7 +153,9 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         """Service to get user profile."""
         # Find any coordinator (they all have the same user profile)
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
+        for entry_id, entry_coordinator in hass.data.get(
+            "moen_smart_water", {}
+        ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 coordinator = entry_coordinator
                 break
@@ -131,7 +165,9 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             return
 
         try:
-            profile = await hass.async_add_executor_job(coordinator.api.get_user_profile)
+            profile = await hass.async_add_executor_job(
+                coordinator.api.get_user_profile
+            )
             _LOGGER.info("User profile: %s", profile)
         except Exception as err:
             _LOGGER.error("Failed to get user profile: %s", err)
@@ -144,7 +180,9 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
+        for entry_id, entry_coordinator in hass.data.get(
+            "moen_smart_water", {}
+        ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 devices = entry_coordinator.get_all_devices()
                 if device_id in devices:
@@ -152,14 +190,22 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     break
 
         if not coordinator:
-            _LOGGER.error("Device %s not found in any configured Moen Smart Water integration", device_id)
+            _LOGGER.error(
+                "Device %s not found in any configured Moen Smart Water integration",
+                device_id,
+            )
             return
 
         try:
             await hass.async_add_executor_job(
-                coordinator.api.set_specific_temperature, device_id, temperature, flow_rate
+                coordinator.api.set_specific_temperature,
+                device_id,
+                temperature,
+                flow_rate,
             )
-            _LOGGER.info("Set temperature to %.1f°C for device %s", temperature, device_id)
+            _LOGGER.info(
+                "Set temperature to %.1f°C for device %s", temperature, device_id
+            )
         except Exception as err:
             _LOGGER.error("Failed to set temperature for device %s: %s", device_id, err)
 
@@ -170,7 +216,9 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         # Find the coordinator for this device
         coordinator = None
-        for entry_id, entry_coordinator in hass.data.get("moen_smart_water", {}).items():
+        for entry_id, entry_coordinator in hass.data.get(
+            "moen_smart_water", {}
+        ).items():
             if isinstance(entry_coordinator, MoenDataUpdateCoordinator):
                 devices = entry_coordinator.get_all_devices()
                 if device_id in devices:
@@ -178,11 +226,16 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     break
 
         if not coordinator:
-            _LOGGER.error("Device %s not found in any configured Moen Smart Water integration", device_id)
+            _LOGGER.error(
+                "Device %s not found in any configured Moen Smart Water integration",
+                device_id,
+            )
             return
 
         try:
-            await hass.async_add_executor_job(coordinator.api.set_flow_rate, device_id, flow_rate)
+            await hass.async_add_executor_job(
+                coordinator.api.set_flow_rate, device_id, flow_rate
+            )
             _LOGGER.info("Set flow rate to %d%% for device %s", flow_rate, device_id)
         except Exception as err:
             _LOGGER.error("Failed to set flow rate for device %s: %s", device_id, err)
