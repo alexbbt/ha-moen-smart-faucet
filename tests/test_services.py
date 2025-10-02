@@ -19,7 +19,7 @@ class TestMoenServices:
         """Test service setup."""
         with patch("custom_components.moen_smart_water.services.hass.services.async_register") as mock_register:
             await async_setup_services(hass)
-            
+
             # Should register 6 services
             assert mock_register.call_count == 6
 
@@ -30,7 +30,7 @@ class TestMoenServices:
         mock_coordinator = MagicMock(spec=MoenDataUpdateCoordinator)
         mock_coordinator.get_all_devices.return_value = {"device_123": sample_device_data}
         mock_coordinator.api.start_water_flow = MagicMock(return_value=True)
-        
+
         hass.data = {"moen_smart_water": {"test_entry": mock_coordinator}}
 
         # Setup service
@@ -45,7 +45,7 @@ class TestMoenServices:
 
         # Get the service function
         service_func = hass.services.async_services()["moen_smart_water"]["dispense_water"]
-        
+
         # Call service
         await service_func(call)
 
@@ -58,7 +58,7 @@ class TestMoenServices:
         # Setup mock coordinator
         mock_coordinator = MagicMock(spec=MoenDataUpdateCoordinator)
         mock_coordinator.get_all_devices.return_value = {}
-        
+
         hass.data = {"moen_smart_water": {"test_entry": mock_coordinator}}
 
         # Setup service
@@ -73,7 +73,7 @@ class TestMoenServices:
 
         # Get the service function
         service_func = hass.services.async_services()["moen_smart_water"]["dispense_water"]
-        
+
         # Call service (should not raise exception)
         await service_func(call)
 
@@ -84,7 +84,7 @@ class TestMoenServices:
         mock_coordinator = MagicMock(spec=MoenDataUpdateCoordinator)
         mock_coordinator.get_all_devices.return_value = {"device_123": sample_device_data}
         mock_coordinator.api.stop_water_flow = MagicMock(return_value=True)
-        
+
         hass.data = {"moen_smart_water": {"test_entry": mock_coordinator}}
 
         # Setup service
@@ -99,7 +99,7 @@ class TestMoenServices:
 
         # Get the service function
         service_func = hass.services.async_services()["moen_smart_water"]["stop_dispensing"]
-        
+
         # Call service
         await service_func(call)
 
@@ -113,7 +113,7 @@ class TestMoenServices:
         mock_coordinator = MagicMock(spec=MoenDataUpdateCoordinator)
         mock_coordinator.get_all_devices.return_value = {"device_123": sample_device_data}
         mock_coordinator.get_device_shadow.return_value = sample_device_data["shadow"]
-        
+
         hass.data = {"moen_smart_water": {"test_entry": mock_coordinator}}
 
         # Setup service
@@ -128,7 +128,7 @@ class TestMoenServices:
 
         # Get the service function
         service_func = hass.services.async_services()["moen_smart_water"]["get_device_status"]
-        
+
         # Call service
         await service_func(call)
 
@@ -141,7 +141,7 @@ class TestMoenServices:
         # Setup mock coordinator
         mock_coordinator = MagicMock(spec=MoenDataUpdateCoordinator)
         mock_coordinator.api.get_user_profile = MagicMock(return_value={"user_id": "test_user"})
-        
+
         hass.data = {"moen_smart_water": {"test_entry": mock_coordinator}}
 
         # Setup service
@@ -152,7 +152,7 @@ class TestMoenServices:
 
         # Get the service function
         service_func = hass.services.async_services()["moen_smart_water"]["get_user_profile"]
-        
+
         # Call service
         await service_func(call)
 
@@ -166,7 +166,7 @@ class TestMoenServices:
         mock_coordinator = MagicMock(spec=MoenDataUpdateCoordinator)
         mock_coordinator.get_all_devices.return_value = {"device_123": sample_device_data}
         mock_coordinator.api.set_specific_temperature = MagicMock(return_value=True)
-        
+
         hass.data = {"moen_smart_water": {"test_entry": mock_coordinator}}
 
         # Setup service
@@ -181,7 +181,7 @@ class TestMoenServices:
 
         # Get the service function
         service_func = hass.services.async_services()["moen_smart_water"]["set_temperature"]
-        
+
         # Call service
         await service_func(call)
 
@@ -195,7 +195,7 @@ class TestMoenServices:
         mock_coordinator = MagicMock(spec=MoenDataUpdateCoordinator)
         mock_coordinator.get_all_devices.return_value = {"device_123": sample_device_data}
         mock_coordinator.api.set_flow_rate = MagicMock(return_value=True)
-        
+
         hass.data = {"moen_smart_water": {"test_entry": mock_coordinator}}
 
         # Setup service
@@ -210,7 +210,7 @@ class TestMoenServices:
 
         # Get the service function
         service_func = hass.services.async_services()["moen_smart_water"]["set_flow_rate"]
-        
+
         # Call service
         await service_func(call)
 
