@@ -25,7 +25,6 @@ PLATFORMS: list[Platform] = [
     Platform.VALVE,
 ]
 
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Moen Smart Water from a config entry."""
     hass.data.setdefault("moen_smart_water", {})
