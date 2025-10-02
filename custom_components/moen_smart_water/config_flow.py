@@ -15,7 +15,7 @@ from .oauth2_impl import MoenOAuth2Implementation
 _LOGGER = logging.getLogger(__name__)
 
 
-class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
+class MoenSmartWaterConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
     """Handle a config flow for Moen Smart Water."""
 
     DOMAIN = "moen_smart_water"

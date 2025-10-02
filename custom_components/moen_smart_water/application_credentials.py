@@ -15,3 +15,13 @@ async def async_get_authorization_server(hass: HomeAssistant) -> AuthorizationSe
         authorize_url=f"{OAUTH_BASE}/oauth2/authorize",
         token_url=f"{OAUTH_BASE}/oauth2/token",
     )
+
+
+async def async_import_client_credential(
+    hass: HomeAssistant, domain: str, data: dict
+) -> None:
+    """Import client credential from a config entry."""
+    if domain == "moen_smart_water":
+        # Store the client credential for the OAuth2 flow
+        hass.data.setdefault("moen_smart_water", {})
+        hass.data["moen_smart_water"]["client_credential"] = data
