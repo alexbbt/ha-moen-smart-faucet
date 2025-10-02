@@ -3,6 +3,6 @@
   "content_in_root": false,
   "filename": "moen_smart_water",
   "country": ["US", "CA"],
-  "homeassistant": "2023.1.0",
+  "homeassistant": "2024.1.0",
   "render_readme": true
 }

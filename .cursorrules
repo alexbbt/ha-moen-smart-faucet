@@ -11,24 +11,66 @@
 - Use type hints where appropriate
 - Maintain consistent error handling patterns
 - Follow Home Assistant integration patterns and conventions
+- Use `ruff` for linting and formatting (configured in pyproject.toml)
+- Use `mypy` for type checking
 
 ## Project Structure
 - This is a Home Assistant custom component for Moen Smart Faucet integration
 - Main code is in `custom_components/moen_smart_water/`
-- Test scripts are in `scripts/`
+- Test scripts are in `scripts/` (excluded from pytest collection)
+- Unit tests are in `tests/` directory
 - Always consider Home Assistant compatibility when making changes
 
 ## Dependencies
 - Check `requirements.txt` and `requirements-test.txt` for project dependencies
 - When adding new dependencies, update the appropriate requirements file
 - Use the virtual environment for all package installations
+- Test dependencies include: pytest, pytest-asyncio, pytest-mock, homeassistant>=2024.1.0
 
 ## Testing
 - Run tests using the virtual environment
 - Use `python -m pytest` or similar testing commands within the activated venv
+- Tests are configured in `pytest.ini` to run from `tests/` directory and ignore `scripts/`
 - Ensure all tests pass before suggesting code changes
+- Use `pytest-asyncio` for async test support
+- Mock external dependencies in tests
+
+## Home Assistant Integration Standards
+- Manifest keys must be ordered: domain, name, then alphabetical order, version last
+- Must include `services.yaml` if component registers services
+- Services.yaml must quote special characters like `%` and `°C` in YAML
+- Include `__version__` in `__init__.py` for proper version handling
+- Use `Platform.VALVE` (requires homeassistant>=2024.1.0)
+- Follow HACS validation requirements
+
+## HACS Integration
+- Repository must have required topics: home-assistant, homeassistant, hacs, integration, moen, smart-faucet, water, iot, python
+- `hacs.json` should not include `iot_class` (that's for manifest.json only)
+- Use `gh` CLI for repository management and releases
+
+## GitHub Actions
+- Use `act` to test workflows locally with Docker
+- Workflows include: hassfest validation, HACS validation, pytest testing
+- All workflows should pass before creating releases
+
+## Version Management
+- Update version in both `__init__.py` and `manifest.json` when releasing
+- Use semantic versioning (e.g., 0.8.3)
+- Create git tags with `v` prefix (e.g., v0.8.3)
+- Use `gh release create` for GitHub releases
+
+## "Publish This" Command
+When user says "Publish This", follow this exact process:
+1. **Check for uncommitted changes first**: Run `git status` and ask user to confirm if there are uncommitted changes
+2. **Ask for new version number**: Prompt user to provide the new version number (e.g., "0.8.4")
+3. **Update version**: Update version in both `__init__.py` and `manifest.json` with the provided version
+4. **Commit changes**: `git add -A && git commit -m "Bump version to X.X.X"`
+5. **Create and push tag**: `git tag vX.X.X && git push origin main && git push origin vX.X.X`
+6. **Create GitHub release**: `gh release create vX.X.X --title "Moen Smart Water vX.X.X" --notes "Release notes"`
+7. **Always ask before proceeding** if there are uncommitted changes detected
 
 ## File Operations
 - Prefer absolute paths when possible
 - Be mindful of the Home Assistant custom component structure
 - Maintain proper imports and module organization
+- Always validate changes with hassfest and HACS workflows
