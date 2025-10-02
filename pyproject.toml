@@ -43,5 +43,6 @@ module = [
     "homeassistant.core.*",
     "homeassistant.helpers.*",
     "homeassistant.util.*",
+    "voluptuous",
 ]
 ignore_missing_imports = true
