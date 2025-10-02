@@ -4,6 +4,5 @@
   "filename": "moen_smart_water",
   "country": ["US", "CA"],
   "homeassistant": "2023.1.0",
-  "render_readme": true,
-  "iot_class": "Cloud Polling"
+  "render_readme": true
 }
