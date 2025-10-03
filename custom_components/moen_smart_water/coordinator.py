@@ -69,7 +69,11 @@ class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             # Get device details only if we don't have them or they're stale (diagnostic data)
             current_time = time.time()
-            if not hasattr(self, '_device_details') or not hasattr(self, '_details_last_update') or (current_time - self._details_last_update) > 300:  # 5 minutes
+            if (
+                not hasattr(self, "_device_details")
+                or not hasattr(self, "_details_last_update")
+                or (current_time - self._details_last_update) > 300
+            ):  # 5 minutes
                 device_details = {}
                 for device_id in self._devices.keys():
                     try:
@@ -84,12 +88,12 @@ class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         )
                         # Use empty details if we can't get it
                         device_details[device_id] = {}
-                
+
                 self._device_details = device_details
                 self._details_last_update = current_time
             else:
                 # Use cached device details
-                device_details = getattr(self, '_device_details', {})
+                device_details = getattr(self, "_device_details", {})
 
             self._device_shadows = device_shadows
             self._device_details = device_details

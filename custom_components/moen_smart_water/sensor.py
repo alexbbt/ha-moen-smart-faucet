@@ -245,6 +245,7 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
         elif key == "last_update":
             if self.coordinator.last_update_success:
                 from datetime import datetime
+
                 self._attr_native_value = datetime.now().isoformat()
             else:
                 self._attr_native_value = "failed"
@@ -264,7 +265,9 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
                 self._attr_native_value = None
         elif key == "wifi_connected":
             if details:
-                self._attr_native_value = "connected" if details.get("connected", False) else "disconnected"
+                self._attr_native_value = (
+                    "connected" if details.get("connected", False) else "disconnected"
+                )
             else:
                 self._attr_native_value = None
         elif key == "battery_percentage":
@@ -290,6 +293,7 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
                 last_connect = details.get("lastConnect")
                 if last_connect:
                     from datetime import datetime
+
                     try:
                         dt = datetime.fromtimestamp(last_connect / 1000)
                         self._attr_native_value = dt.isoformat()
