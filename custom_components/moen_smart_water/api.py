@@ -26,7 +26,7 @@ USER_AGENT = "Smartwater-iOS-prod-3.39.0"
 class MoenAPI:
     """Comprehensive API client for Moen Smart Water operations."""
 
-    def __init__(self, username: str, password: str) -> None:
+    def __init__(self, username: str, password: str, tokens: dict[str, Any] | None = None) -> None:
         """Initialize the Moen API client."""
         self.client_id = CLIENT_ID
         self.username = username
@@ -43,6 +43,19 @@ class MoenAPI:
         self.id_token: str | None = None
         self.refresh_token: str | None = None
         self.token_expiry = 0.0
+
+        # Restore tokens if provided
+        if tokens:
+            self.access_token = tokens.get("access_token")
+            self.id_token = tokens.get("id_token")
+            self.refresh_token = tokens.get("refresh_token")
+            self.token_expiry = tokens.get("token_expiry", 0.0)
+
+            # Update session headers if we have a valid token
+            if self.access_token and time.time() < self.token_expiry:
+                self.session.headers.update(
+                    {"Authorization": f"Bearer {self.access_token}"}
+                )
 
         # Cached data
         self._user_profile: dict[str, Any] | None = None
@@ -613,3 +626,12 @@ class MoenAPI:
         if self._temperature_definitions is None:
             self.get_user_details_and_temperature_definitions()
         return self._temperature_definitions or {}
+
+    def get_tokens(self) -> dict[str, Any]:
+        """Get current authentication tokens."""
+        return {
+            "access_token": self.access_token,
+            "id_token": self.id_token,
+            "refresh_token": self.refresh_token,
+            "token_expiry": self.token_expiry,
+        }

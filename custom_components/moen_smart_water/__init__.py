@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any
 
 __version__ = "0.8.5"
@@ -25,19 +26,35 @@ PLATFORMS: list[Platform] = [
     Platform.VALVE,
 ]
 
+
+async def _store_tokens(hass: HomeAssistant, entry: ConfigEntry, tokens: dict[str, Any]) -> None:
+    """Store tokens in the config entry."""
+    # Update the config entry with new tokens
+    new_data = {**entry.data, "tokens": tokens}
+    hass.config_entries.async_update_entry(entry, data=new_data)
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Moen Smart Water from a config entry."""
     hass.data.setdefault("moen_smart_water", {})
 
-    # Initialize the API client
+    # Get stored tokens from config entry
+    stored_tokens = entry.data.get("tokens")
+
+    # Initialize the API client with stored tokens
     api = MoenAPI(
         username=entry.data["username"],
         password=entry.data["password"],
+        tokens=stored_tokens,
     )
 
     # Test the connection and get user profile
     try:
-        await hass.async_add_executor_job(api.login)
+        # Only login if we don't have valid tokens
+        if not api.access_token or time.time() > api.token_expiry:
+            await hass.async_add_executor_job(api.login)
+            # Store the new tokens
+            await _store_tokens(hass, entry, api.get_tokens())
+
         user_profile = await hass.async_add_executor_job(api.get_user_profile)
         _LOGGER.info(
             "Successfully connected to Moen API for user: %s",

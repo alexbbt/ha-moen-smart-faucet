@@ -66,6 +66,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
             "title": f"Moen Smart Water ({user_profile.get('firstName', 'User')} - {device_count} devices)",
             "user_profile": user_profile,
             "device_count": device_count,
+            "tokens": api.get_tokens(),
         }
 
     except Exception as err:
@@ -97,7 +98,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain="moen_smart_water"):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:
-                return self.async_create_entry(title=info["title"], data=user_input)
+                # Include tokens in the config entry data
+                config_data = {**user_input, "tokens": info["tokens"]}
+                return self.async_create_entry(title=info["title"], data=config_data)
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
