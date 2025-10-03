@@ -160,16 +160,32 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             flow_rate = (
                 int(self._attr_valve_position) if self._attr_valve_position > 0 else 100
             )
-            temperature = (
-                self._attr_preset_mode if self._attr_preset_mode else "coldest"
-            )
-
-            await self.hass.async_add_executor_job(
-                self.coordinator.api.start_water_flow,
-                self._device_id,
-                temperature,
-                flow_rate,
-            )
+            # Use appropriate temperature method based on preset mode, like the buttons do
+            if self._attr_preset_mode == "coldest":
+                await self.hass.async_add_executor_job(
+                    self.coordinator.api.set_coldest,
+                    self._device_id,
+                    flow_rate,
+                )
+            elif self._attr_preset_mode == "warm":
+                await self.hass.async_add_executor_job(
+                    self.coordinator.api.set_warm,
+                    self._device_id,
+                    flow_rate,
+                )
+            elif self._attr_preset_mode == "hottest":
+                await self.hass.async_add_executor_job(
+                    self.coordinator.api.set_hottest,
+                    self._device_id,
+                    flow_rate,
+                )
+            else:
+                # Default to coldest if preset mode is not recognized
+                await self.hass.async_add_executor_job(
+                    self.coordinator.api.set_coldest,
+                    self._device_id,
+                    flow_rate,
+                )
 
             # Update valve position to reflect actual flow rate
             self._attr_valve_position = flow_rate
