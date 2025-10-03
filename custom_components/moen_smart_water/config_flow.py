@@ -5,41 +5,56 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import voluptuous as vol
+from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers import config_entry_oauth2_flow
 
-from .api import CLIENT_ID, MoenAPI
+from .api import MoenAPI
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class MoenSmartWaterConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandler):
+class MoenSmartWaterConfigFlow(config_entries.ConfigFlow):
     """Handle a config flow for Moen Smart Water."""
 
-    DOMAIN = "moen_smart_water"
-    CONFIG_FLOW = True
+    VERSION = 1
 
     @property
-    def logger(self) -> logging.Logger:
-        """Return logger."""
-        return _LOGGER
+    def domain(self) -> str:
+        """Return the domain."""
+        return "moen_smart_water"
 
-    @property
-    def extra_authorize_data(self) -> dict[str, Any]:
-        """Extra data that needs to be appended to the authorize url."""
-        return {
-            "scope": "openid profile email",
-            "response_type": "code",
-        }
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle the initial step."""
+        if user_input is None:
+            return self.async_show_form(
+                step_id="user",
+                data_schema=vol.Schema(
+                    {
+                        vol.Required("username"): str,
+                        vol.Required("password"): str,
+                    }
+                ),
+            )
 
-    async def async_oauth_create_entry(self, data: dict[str, Any]) -> FlowResult:
-        """Create an entry for the flow, or update existing entry."""
-        # Get user profile to create a meaningful title
+        # Check if already configured
+        await self.async_set_unique_id(user_input["username"])
+        self._abort_if_unique_id_configured()
+
+        # Test the connection
         try:
-            api = MoenAPI.from_token(data["token"])
+            api = MoenAPI(
+                username=user_input["username"],
+                password=user_input["password"],
+            )
+
+            # Test login
+            await self.hass.async_add_executor_job(api.login)
             user_profile = await self.hass.async_add_executor_job(api.get_user_profile)
 
-            # Try to get devices to see if we can find any
+            # Try to get devices
             try:
                 devices = await self.hass.async_add_executor_job(api.list_devices)
                 device_count = len(devices) if devices else 0
@@ -56,41 +71,17 @@ class MoenSmartWaterConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandle
 
             return self.async_create_entry(
                 title=title,
-                data=data,
+                data=user_input,
             )
         except Exception as err:
             _LOGGER.error("Failed to validate Moen API connection: %s", err)
-            return self.async_abort(reason="cannot_connect")
-
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
-        """Handle the initial step."""
-        return await self.async_step_pick_implementation()
-
-    async def async_step_pick_implementation(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
-        """Handle the step to pick implementation."""
-        implementations = await self.async_get_implementations()
-        if not implementations:
-            return self.async_abort(reason="missing_configuration")
-
-        # Use the first (and only) implementation
-        self.flow_impl = implementations[0]
-        return await self.async_step_auth()
-
-    async def async_get_implementations(
-        self,
-    ) -> list[config_entry_oauth2_flow.LocalOAuth2Implementation]:
-        """Return list of OAuth2 implementations."""
-        return [
-            config_entry_oauth2_flow.LocalOAuth2Implementation(
-                self.hass,
-                "moen_smart_water",
-                CLIENT_ID,
-                "",  # Client secret will be provided by application_credentials
-                "https://4j1gkf0vji.execute-api.us-east-2.amazonaws.com/prod/v1/oauth2/authorize",
-                "https://4j1gkf0vji.execute-api.us-east-2.amazonaws.com/prod/v1/oauth2/token",
+            return self.async_show_form(
+                step_id="user",
+                data_schema=vol.Schema(
+                    {
+                        vol.Required("username"): str,
+                        vol.Required("password"): str,
+                    }
+                ),
+                errors={"base": "cannot_connect"},
             )
-        ]
