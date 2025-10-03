@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.entity import EntityCategory
 
 from .coordinator import MoenDataUpdateCoordinator
 
@@ -196,7 +197,7 @@ class MoenApiStatusSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_api_status"
         self._attr_name = "API Status"
         self._attr_native_value = "unknown"
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -227,7 +228,7 @@ class MoenLastUpdateSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_last_update"
         self._attr_name = "Last Update"
         self._attr_native_value = "never"
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -250,7 +251,7 @@ class MoenWifiNetworkSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_wifi_network"
         self._attr_name = "WiFi Network"
         self._attr_native_value = "unknown"
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -273,7 +274,7 @@ class MoenWifiRssiSensor(MoenSensorBase):
         self._attr_name = "WiFi Signal"
         self._attr_native_unit_of_measurement = "dBm"
         self._attr_native_value = 0
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -295,7 +296,7 @@ class MoenWifiConnectedSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_wifi_connected"
         self._attr_name = "WiFi Connected"
         self._attr_native_value = "unknown"
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -322,7 +323,7 @@ class MoenBatteryPercentageSensor(MoenSensorBase):
         self._attr_native_unit_of_measurement = "%"
         self._attr_native_value = 100
         self._attr_device_class = SensorDeviceClass.BATTERY
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -344,7 +345,7 @@ class MoenPowerSourceSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_power_source"
         self._attr_name = "Power Source"
         self._attr_native_value = "unknown"
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -367,7 +368,7 @@ class MoenFirmwareVersionSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_firmware_version"
         self._attr_name = "Firmware Version"
         self._attr_native_value = "unknown"
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -389,7 +390,7 @@ class MoenLastConnectSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_last_connect"
         self._attr_name = "Last Connect"
         self._attr_native_value = "never"
-        self._attr_entity_category = "diagnostic"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
