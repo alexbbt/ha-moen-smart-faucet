@@ -19,6 +19,7 @@ class MoenSmartWaterConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandle
     """Handle a config flow for Moen Smart Water."""
 
     DOMAIN = "moen_smart_water"
+    CONFIG_FLOW = True
 
     @property
     def logger(self) -> logging.Logger:

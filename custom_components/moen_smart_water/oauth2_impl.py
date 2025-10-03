@@ -25,4 +25,5 @@ class MoenOAuth2Implementation(config_entry_oauth2_flow.LocalOAuth2Implementatio
     async def async_resolve_external_data(self, external_data: dict) -> dict:
         """Resolve external data to tokens."""
         # The external data should already contain the tokens from the OAuth2 flow
-        return external_data
+        # Return the token data that will be stored in the config entry
+        return {"token": external_data}
