@@ -261,11 +261,13 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             # Try device details first, then fall back to shadow
             if details:
                 connectivity = details.get("connectivity", {})
-                self._attr_native_value = connectivity.get(
-                    "rssi", state.get("wifiRssi", 0)
-                )
+                rssi_value = connectivity.get("rssi")
+                if rssi_value is not None:
+                    self._attr_native_value = rssi_value
+                else:
+                    self._attr_native_value = state.get("wifiRssi")
             else:
-                self._attr_native_value = state.get("wifiRssi", 0)
+                self._attr_native_value = state.get("wifiRssi")
         elif key == "wifi_connected":
             # Try device details first, then fall back to shadow
             if details:
