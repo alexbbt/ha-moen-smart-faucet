@@ -275,33 +275,35 @@ class MoenAPITester:
             print(f"  Connected: {reported.get('connected', False)}")
             print(f"  Safety Mode: {reported.get('safetyModeEnabled', False)}")
             print(f"  Child Mode: {reported.get('childModeEnabled', False)}")
-            
+
             print("\n--- Diagnostic Data ---")
             # Battery information
             battery = reported.get("battery", {})
             if battery:
                 print(f"  Battery Percentage: {battery.get('percentage', 'unknown')}%")
                 print(f"  Battery Status: {battery.get('status', 'unknown')}")
-            
+
             # WiFi connectivity
             connectivity = reported.get("connectivity", {})
             if connectivity:
                 print(f"  WiFi Network: {connectivity.get('net', 'unknown')}")
                 print(f"  WiFi Signal: {connectivity.get('rssi', 'unknown')} dBm")
                 print(f"  WiFi Connected: {connectivity.get('connected', False)}")
-            
+
             # Firmware information
             firmware = reported.get("firmware", {})
             if firmware:
                 print(f"  Firmware Version: {firmware.get('version', 'unknown')}")
-            
+
             # Device information
             device_info = reported.get("deviceInfo", {})
             if device_info:
                 print(f"  Device Model: {device_info.get('model', 'unknown')}")
                 print(f"  Device Type: {device_info.get('type', 'unknown')}")
-                print(f"  Hardware Version: {device_info.get('hardwareVersion', 'unknown')}")
-            
+                print(
+                    f"  Hardware Version: {device_info.get('hardwareVersion', 'unknown')}"
+                )
+
             # Last connection time
             last_connect = reported.get("lastConnect")
             if last_connect:
@@ -309,19 +311,32 @@ class MoenAPITester:
                     print(f"  Last Connect: {last_connect}")
                 else:
                     from datetime import datetime
+
                     dt = datetime.fromtimestamp(last_connect / 1000)
                     print(f"  Last Connect: {dt.isoformat()}")
-            
+
             # Command information
             command = reported.get("command", "unknown")
             print(f"  Command: {command}")
-            
+
             # Additional reported data
             print("\n--- Additional Reported Data ---")
             for key, value in reported.items():
-                if key not in ['state', 'temperature', 'volume', 'flowRate', 'connected', 
-                              'safetyModeEnabled', 'childModeEnabled', 'battery', 'connectivity', 
-                              'firmware', 'deviceInfo', 'lastConnect', 'command']:
+                if key not in [
+                    "state",
+                    "temperature",
+                    "volume",
+                    "flowRate",
+                    "connected",
+                    "safetyModeEnabled",
+                    "childModeEnabled",
+                    "battery",
+                    "connectivity",
+                    "firmware",
+                    "deviceInfo",
+                    "lastConnect",
+                    "command",
+                ]:
                     print(f"  {key}: {value}")
 
             if desired:
@@ -395,7 +410,6 @@ class MoenAPITester:
         except Exception as e:
             print(f"✗ Failed to get usage data: {e}")
             return False
-
 
     def run_tests(self, test_type: str = "all") -> None:
         """Run specified API tests."""

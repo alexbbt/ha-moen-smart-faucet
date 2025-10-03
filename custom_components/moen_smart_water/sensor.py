@@ -211,7 +211,6 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         shadow = self.coordinator.get_device_shadow(self._device_id)
-        details = self.coordinator.get_device_details(self._device_id)
 
         if not shadow:
             if self.entity_description.key == "api_status":
@@ -250,17 +249,13 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             self._attr_native_value = state.get("flowRate")
         elif key == "api_status":
             if shadow:
-                # Use actual API values for connected and state
-                device_data = self.coordinator.get_device(self._device_id)
-                if device_data:
-                    connected = device_data.get("connected", False)
-                    state = device_data.get("state", "unknown")
-                    if connected:
-                        self._attr_native_value = f"Connected - {state.title()}"
-                    else:
-                        self._attr_native_value = "Disconnected"
+                # Use actual API values for connected and state from shadow
+                connected = state.get("connected", False)
+                device_state = state.get("state", "unknown")
+                if connected:
+                    self._attr_native_value = f"Connected - {device_state.title()}"
                 else:
-                    self._attr_native_value = "Device Not Found"
+                    self._attr_native_value = "Disconnected"
             else:
                 self._attr_native_value = "No Data"
         elif key == "last_update":
@@ -271,61 +266,38 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             else:
                 self._attr_native_value = None
 
-        # Diagnostic sensors from device details only
+        # Diagnostic sensors from device shadow (all data is in shadow)
         elif key == "wifi_network":
-            if details:
-                connectivity = details.get("connectivity", {})
-                self._attr_native_value = connectivity.get("net")
-            else:
-                self._attr_native_value = None
+            self._attr_native_value = state.get("wifiNetwork")
         elif key == "wifi_rssi":
-            if details:
-                connectivity = details.get("connectivity", {})
-                self._attr_native_value = connectivity.get("rssi")
-            else:
-                self._attr_native_value = None
+            self._attr_native_value = state.get("wifiRssi")
         elif key == "wifi_connected":
-            if details:
-                self._attr_native_value = (
-                    "connected" if details.get("connected", False) else "disconnected"
-                )
-            else:
-                self._attr_native_value = None
+            # WiFi connected status - assume connected if we have signal data
+            self._attr_native_value = (
+                "connected" if state.get("wifiRssi") is not None else "disconnected"
+            )
         elif key == "battery_percentage":
-            if details:
-                battery = details.get("battery", {})
-                self._attr_native_value = battery.get("percentage")
-            else:
-                self._attr_native_value = None
+            self._attr_native_value = state.get("batteryPercentage")
         elif key == "firmware_version":
-            if details:
-                firmware = details.get("firmware", {})
-                self._attr_native_value = firmware.get("version")
-            else:
-                self._attr_native_value = None
+            self._attr_native_value = state.get("firmwareVersion")
         elif key == "last_connect":
-            if details:
-                last_connect = details.get("lastConnect")
-                if last_connect:
-                    from datetime import datetime, timezone
+            last_connect = state.get("lastConnect")
+            if last_connect:
+                from datetime import datetime, timezone
 
-                    try:
-                        if isinstance(last_connect, str):
-                            # Parse ISO string
-                            dt = datetime.fromisoformat(
-                                last_connect.replace("Z", "+00:00")
-                            )
-                            self._attr_native_value = dt
-                        else:
-                            # Convert timestamp to datetime
-                            dt = datetime.fromtimestamp(
-                                last_connect / 1000,
-                                tz=timezone.utc,  # noqa: UP017
-                            )
-                            self._attr_native_value = dt
-                    except (ValueError, TypeError):
-                        self._attr_native_value = None
-                else:
+                try:
+                    if isinstance(last_connect, str):
+                        # Parse ISO string
+                        dt = datetime.fromisoformat(last_connect.replace("Z", "+00:00"))
+                        self._attr_native_value = dt
+                    else:
+                        # Convert timestamp to datetime
+                        dt = datetime.fromtimestamp(
+                            last_connect / 1000,
+                            tz=timezone.utc,  # noqa: UP017
+                        )
+                        self._attr_native_value = dt
+                except (ValueError, TypeError):
                     self._attr_native_value = None
             else:
                 self._attr_native_value = None
