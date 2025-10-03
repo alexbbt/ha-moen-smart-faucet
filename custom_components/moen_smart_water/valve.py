@@ -234,7 +234,7 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             await self.async_close_valve()
 
     async def async_set_valve_position(self, position: float) -> None:
-        """Set the valve position (flow rate 0-100) and restart water flow."""
+        """Set the valve position (flow rate 0-100) and open/restart water flow."""
         try:
             _LOGGER.info(
                 "Setting valve position to %d%% for device %s",
@@ -245,9 +245,23 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             # Update the valve position
             self._attr_valve_position = int(position)
 
-            # If the valve is currently open (water is flowing), restart with new flow rate
-            if not self._attr_is_closed:
-                _LOGGER.info("Valve is open, restarting water flow with new flow rate")
+            # If position is 0, close the valve
+            if int(position) == 0:
+                if not self._attr_is_closed:
+                    _LOGGER.info("Position set to 0%, closing valve")
+                    await self.async_close_valve()
+                else:
+                    _LOGGER.info("Valve already closed")
+            else:
+                # Position > 0, open or restart the valve with new flow rate
+                if not self._attr_is_closed:
+                    _LOGGER.info(
+                        "Valve is open, restarting water flow with new flow rate"
+                    )
+                else:
+                    _LOGGER.info(
+                        "Valve is closed, opening with %d%% flow rate", int(position)
+                    )
 
                 # Use appropriate temperature method based on preset mode, like the buttons do
                 if self._attr_preset_mode == "coldest":
@@ -279,15 +293,9 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
                 # Trigger coordinator update to refresh state
                 await self.coordinator.async_request_refresh()
                 _LOGGER.info(
-                    "Successfully restarted water flow with %d%% flow rate for device %s",
+                    "Successfully opened/restarted water flow with %d%% flow rate for device %s",
                     int(position),
                     self._device_id,
-                )
-            else:
-                # Valve is closed, just update the position for next time it opens
-                _LOGGER.info(
-                    "Valve is closed, flow rate set to %d%% for next opening",
-                    int(position),
                 )
 
         except Exception as err:
