@@ -267,9 +267,9 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
                 self._attr_native_value = "no_data"
         elif key == "last_update":
             if self.coordinator.last_update_success:
-                from datetime import datetime
+                from datetime import datetime, timezone
 
-                self._attr_native_value = datetime.now(datetime.UTC)
+                self._attr_native_value = datetime.now(timezone.utc)  # noqa: UP017
             else:
                 self._attr_native_value = None
 
@@ -315,7 +315,7 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             if details:
                 last_connect = details.get("lastConnect")
                 if last_connect:
-                    from datetime import datetime
+                    from datetime import datetime, timezone
 
                     try:
                         if isinstance(last_connect, str):
@@ -327,7 +327,8 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
                         else:
                             # Convert timestamp to datetime
                             dt = datetime.fromtimestamp(
-                                last_connect / 1000, tz=datetime.UTC
+                                last_connect / 1000,
+                                tz=timezone.utc,  # noqa: UP017
                             )
                             self._attr_native_value = dt
                     except (ValueError, TypeError):
