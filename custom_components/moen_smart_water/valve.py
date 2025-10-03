@@ -69,6 +69,7 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
         self._attr_is_opening = False
         self._attr_is_closing = False
         self._attr_valve_position = 0  # 0-100 for flow rate
+        self._attr_reports_position = True  # Required for valve entities
 
         # Device class for better UI representation
         self._attr_device_class = "water"
