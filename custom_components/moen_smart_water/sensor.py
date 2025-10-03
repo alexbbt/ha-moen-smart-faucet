@@ -45,8 +45,7 @@ FAUCET_STATE_SENSOR = SensorEntityDescription(
 LAST_DISPENSE_VOLUME_SENSOR = SensorEntityDescription(
     key="last_dispense_volume",
     name="Last Dispense Volume",
-    native_unit_of_measurement="μL",
-    suggested_unit_of_measurement="ml",
+    native_unit_of_measurement="mL",
     icon="mdi:cup-water",
 )
 
@@ -238,7 +237,12 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
                 self._attr_native_value = "idle"
         elif key == "last_dispense_volume":
             # Device shadow uses 'volume' field, not 'lastDispenseVolume'
-            self._attr_native_value = state.get("volume")
+            # Convert from μL to mL for better readability (divide by 1000)
+            volume_ul = state.get("volume")
+            if volume_ul is not None:
+                self._attr_native_value = volume_ul / 1000.0
+            else:
+                self._attr_native_value = None
         elif key == "temperature":
             self._attr_native_value = state.get("temperature")
         elif key == "flow_rate":
