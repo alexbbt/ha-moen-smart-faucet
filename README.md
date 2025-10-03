@@ -54,6 +54,23 @@
   - Cloud connection status
 - **Services**: Programmatic control via Home Assistant services
 
+## Time & Date Sensors
+
+For general time and date needs, we recommend using Home Assistant's built-in [Time & Date integration](https://www.home-assistant.io/integrations/time_date/). This integration provides:
+
+- Current date and time in various formats
+- Automatic timezone handling
+- Standard Home Assistant time/date sensors
+- No custom code required
+
+### Device-Specific Timestamps
+
+This integration provides device-specific timestamp sensors:
+- **Last Update**: When the integration last successfully updated data from the Moen API
+- **Last Connect**: When the faucet last connected to the Moen cloud
+
+These are different from general system time and provide specific information about your faucet's connectivity and data freshness.
+
 ## Installation
 
 ### Via [HACS](https://hacs.xyz/)
