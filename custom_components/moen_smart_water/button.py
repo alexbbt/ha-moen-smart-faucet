@@ -108,7 +108,7 @@ class MoenButton(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
         key = self.entity_description.key
-        
+
         try:
             if key == "start_water":
                 await self.hass.async_add_executor_job(
@@ -118,13 +118,13 @@ class MoenButton(CoordinatorEntity, ButtonEntity):
                     100,  # Default to full flow rate
                 )
                 _LOGGER.info("Started water flow for device %s", self._device_id)
-                
+
             elif key == "stop_water":
                 await self.hass.async_add_executor_job(
                     self.coordinator.api.stop_water_flow, self._device_id
                 )
                 _LOGGER.info("Stopped water flow for device %s", self._device_id)
-                
+
             elif key == "coldest":
                 await self.hass.async_add_executor_job(
                     self.coordinator.api.set_coldest,
@@ -132,7 +132,7 @@ class MoenButton(CoordinatorEntity, ButtonEntity):
                     100,  # Full flow rate
                 )
                 _LOGGER.info("Set coldest temperature for device %s", self._device_id)
-                
+
             elif key == "warm":
                 await self.hass.async_add_executor_job(
                     self.coordinator.api.set_warm,
@@ -140,7 +140,7 @@ class MoenButton(CoordinatorEntity, ButtonEntity):
                     100,  # Full flow rate
                 )
                 _LOGGER.info("Set warm temperature for device %s", self._device_id)
-                
+
             elif key == "hottest":
                 await self.hass.async_add_executor_job(
                     self.coordinator.api.set_hottest,
@@ -148,7 +148,7 @@ class MoenButton(CoordinatorEntity, ButtonEntity):
                     100,  # Full flow rate
                 )
                 _LOGGER.info("Set hottest temperature for device %s", self._device_id)
-                
+
         except Exception as err:
             _LOGGER.error(
                 "Failed to execute %s action for device %s: %s",
