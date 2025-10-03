@@ -46,6 +46,7 @@ LAST_DISPENSE_VOLUME_SENSOR = SensorEntityDescription(
     key="last_dispense_volume",
     name="Last Dispense Volume",
     native_unit_of_measurement="mL",
+    device_class=SensorDeviceClass.VOLUME,
     icon="mdi:cup-water",
 )
 
@@ -74,6 +75,7 @@ WIFI_RSSI_SENSOR = SensorEntityDescription(
     key="wifi_rssi",
     name="WiFi Signal",
     native_unit_of_measurement="dBm",
+    device_class=SensorDeviceClass.SIGNAL_STRENGTH,
     entity_category=EntityCategory.DIAGNOSTIC,
 )
 
