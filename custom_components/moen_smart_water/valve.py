@@ -63,9 +63,6 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
         self._attr_supported_features = (
             ValveEntityFeature.OPEN
             | ValveEntityFeature.CLOSE
-            | ValveEntityFeature.SET_VALVE_POSITION
-            | ValveEntityFeature.STOP
-            | ValveEntityFeature.TOGGLE
         )
 
         # Valve state
