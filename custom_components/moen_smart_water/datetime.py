@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from homeassistant.components.datetime import DateTimeEntity, DateTimeEntityDescription
 from homeassistant.config_entries import ConfigEntry
@@ -122,7 +122,7 @@ class MoenDateTime(CoordinatorEntity, DateTimeEntity):
                             dt = datetime.fromtimestamp(last_connect / 1000)
                             # Assume UTC if no timezone info
                             if dt.tzinfo is None:
-                                dt = dt.replace(tzinfo=datetime.UTC)
+                                dt = dt.replace(tzinfo=timezone.utc)  # noqa: UP017
                             self._attr_native_value = dt
                         except (ValueError, TypeError):
                             self._attr_native_value = None
@@ -134,7 +134,7 @@ class MoenDateTime(CoordinatorEntity, DateTimeEntity):
         elif self.entity_description.key == "last_update":
             if self.coordinator.last_update_success:
                 # Use current time as last update time
-                self._attr_native_value = datetime.now(datetime.UTC)
+                self._attr_native_value = datetime.now(timezone.utc)  # noqa: UP017
             else:
                 self._attr_native_value = None
 
