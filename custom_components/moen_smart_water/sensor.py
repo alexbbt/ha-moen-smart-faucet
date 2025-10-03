@@ -189,6 +189,8 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         shadow = self.coordinator.get_device_shadow(self._device_id)
+        details = self.coordinator.get_device_details(self._device_id)
+
         if not shadow:
             if self.entity_description.key == "api_status":
                 self._attr_native_value = "no_data"
@@ -234,21 +236,56 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             else:
                 self._attr_native_value = "failed"
         elif key == "wifi_network":
-            self._attr_native_value = state.get("wifiNetwork", "unknown")
+            # Try device details first, then fall back to shadow
+            if details:
+                connectivity = details.get("connectivity", {})
+                self._attr_native_value = connectivity.get("net", state.get("wifiNetwork", "unknown"))
+            else:
+                self._attr_native_value = state.get("wifiNetwork", "unknown")
         elif key == "wifi_rssi":
-            self._attr_native_value = state.get("wifiRssi", 0)
+            # Try device details first, then fall back to shadow
+            if details:
+                connectivity = details.get("connectivity", {})
+                self._attr_native_value = connectivity.get("rssi", state.get("wifiRssi", 0))
+            else:
+                self._attr_native_value = state.get("wifiRssi", 0)
         elif key == "wifi_connected":
-            self._attr_native_value = (
-                "connected" if state.get("connected", False) else "disconnected"
-            )
+            # Try device details first, then fall back to shadow
+            if details:
+                self._attr_native_value = "connected" if details.get("connected", False) else "disconnected"
+            else:
+                self._attr_native_value = (
+                    "connected" if state.get("connected", False) else "disconnected"
+                )
         elif key == "battery_percentage":
-            self._attr_native_value = state.get("batteryPercentage", 100)
+            # Try device details first, then fall back to shadow
+            if details:
+                battery = details.get("battery", {})
+                self._attr_native_value = battery.get("percentage", state.get("batteryPercentage", 100))
+            else:
+                self._attr_native_value = state.get("batteryPercentage", 100)
         elif key == "power_source":
-            self._attr_native_value = state.get("powerSource", "unknown")
+            # Try device details first, then fall back to shadow
+            if details:
+                battery = details.get("battery", {})
+                self._attr_native_value = battery.get("source", state.get("powerSource", "unknown"))
+            else:
+                self._attr_native_value = state.get("powerSource", "unknown")
         elif key == "firmware_version":
-            self._attr_native_value = state.get("firmwareVersion", "unknown")
+            # Try device details first, then fall back to shadow
+            if details:
+                firmware = details.get("firmware", {})
+                self._attr_native_value = firmware.get("version", state.get("firmwareVersion", "unknown"))
+            else:
+                self._attr_native_value = state.get("firmwareVersion", "unknown")
         elif key == "last_connect":
-            last_connect = state.get("lastConnect")
+            # Try device details first, then fall back to shadow
+            last_connect = None
+            if details:
+                last_connect = details.get("lastConnect")
+            if not last_connect:
+                last_connect = state.get("lastConnect")
+
             if last_connect:
                 from datetime import datetime
                 try:
