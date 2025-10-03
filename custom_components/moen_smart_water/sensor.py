@@ -244,7 +244,8 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
                 self._attr_native_value = "no_data"
         elif key == "last_update":
             if self.coordinator.last_update_success:
-                self._attr_native_value = self.coordinator.last_update_time.isoformat()
+                from datetime import datetime
+                self._attr_native_value = datetime.now().isoformat()
             else:
                 self._attr_native_value = "failed"
         elif key == "wifi_network":
