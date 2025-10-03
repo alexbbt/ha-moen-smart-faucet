@@ -93,12 +93,6 @@ BATTERY_SENSOR = SensorEntityDescription(
     entity_category=EntityCategory.DIAGNOSTIC,
 )
 
-POWER_SOURCE_SENSOR = SensorEntityDescription(
-    key="power_source",
-    name="Power Source",
-    entity_category=EntityCategory.DIAGNOSTIC,
-)
-
 FIRMWARE_VERSION_SENSOR = SensorEntityDescription(
     key="firmware_version",
     name="Firmware Version",
@@ -160,7 +154,6 @@ async def async_setup_entry(
                 MoenSensor(coordinator, device_id, device_name, WIFI_RSSI_SENSOR),
                 MoenSensor(coordinator, device_id, device_name, WIFI_CONNECTED_SENSOR),
                 MoenSensor(coordinator, device_id, device_name, BATTERY_SENSOR),
-                MoenSensor(coordinator, device_id, device_name, POWER_SOURCE_SENSOR),
                 MoenSensor(
                     coordinator, device_id, device_name, FIRMWARE_VERSION_SENSOR
                 ),
@@ -299,12 +292,6 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             if details:
                 battery = details.get("battery", {})
                 self._attr_native_value = battery.get("percentage")
-            else:
-                self._attr_native_value = None
-        elif key == "power_source":
-            if details:
-                # Power source is at the top level, not in battery object
-                self._attr_native_value = details.get("powerSource")
             else:
                 self._attr_native_value = None
         elif key == "firmware_version":
