@@ -74,4 +74,4 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok:
         hass.data["moen_smart_water"].pop(entry.entry_id)
 
-    return bool(unload_ok)
+    return unload_ok

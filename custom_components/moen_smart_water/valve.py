@@ -83,7 +83,7 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
         # Additional attributes for temperature and status
         self._attr_temperature = 20.0
         self._attr_preset_mode = "coldest"
-        self._attr_extra_state_attributes: dict[str, Any] = {}
+        self._attr_extra_state_attributes = {}
 
         # Device information
         self._attr_device_info = DeviceInfo(
@@ -218,7 +218,7 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             await self.hass.async_add_executor_job(
                 self.coordinator.api.set_flow_rate, self._device_id, int(position)
             )
-            self._attr_valve_position = int(position)
+            self._attr_valve_position = position
             _LOGGER.info(
                 "Set valve position to %d%% for device %s",
                 int(position),

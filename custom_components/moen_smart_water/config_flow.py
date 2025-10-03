@@ -77,11 +77,10 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
         raise CannotConnect(f"Failed to connect to Moen API: {err}") from err
 
 
-class ConfigFlow(config_entries.ConfigFlow):
+class ConfigFlow(config_entries.ConfigFlow, domain="moen_smart_water"):
     """Handle a config flow for Moen Smart Water."""
 
     VERSION = 1
-    DOMAIN = "moen_smart_water"
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
