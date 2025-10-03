@@ -71,9 +71,9 @@ class MoenAPITester:
             print(f"Client ID: {CLIENT_ID} (hardcoded)")
             print(f"Token expires: {stored_data.get('expires_at', 'unknown')}")
 
-            use_existing = input("\nUse existing tokens? (y/n): ").lower().strip()
-            if use_existing == "y":
-                return stored_data
+            # Automatically use existing tokens for testing
+            print("Automatically using existing tokens for testing...")
+            return stored_data
 
         # Get new credentials for authentication
         print("\nEnter Moen API credentials for authentication:")
@@ -258,7 +258,7 @@ class MoenAPITester:
             return False
 
     def test_device_shadow(self, client_id: str) -> bool:
-        """Test getting device shadow."""
+        """Test getting device shadow with all available data."""
         print(f"\n=== Testing Device Shadow for {client_id} ===")
         try:
             shadow = self.api.get_device_shadow(client_id)
@@ -266,18 +266,68 @@ class MoenAPITester:
             reported = state.get("reported", {})
             desired = state.get("desired", {})
 
-            print("✓ Device shadow retrieved:")
-            print(f"  Current State: {reported.get('state', 'unknown')}")
+            print("✓ Device shadow retrieved with all data:")
+            print("\n--- Operational Data ---")
+            print(f"  State: {reported.get('state', 'unknown')}")
             print(f"  Temperature: {reported.get('temperature', 'unknown')}°C")
             print(f"  Volume: {reported.get('volume', 'unknown')} μL")
+            print(f"  Flow Rate: {reported.get('flowRate', 'unknown')}%")
             print(f"  Connected: {reported.get('connected', False)}")
             print(f"  Safety Mode: {reported.get('safetyModeEnabled', False)}")
             print(f"  Child Mode: {reported.get('childModeEnabled', False)}")
+            
+            print("\n--- Diagnostic Data ---")
+            # Battery information
+            battery = reported.get("battery", {})
+            if battery:
+                print(f"  Battery Percentage: {battery.get('percentage', 'unknown')}%")
+                print(f"  Battery Status: {battery.get('status', 'unknown')}")
+            
+            # WiFi connectivity
+            connectivity = reported.get("connectivity", {})
+            if connectivity:
+                print(f"  WiFi Network: {connectivity.get('net', 'unknown')}")
+                print(f"  WiFi Signal: {connectivity.get('rssi', 'unknown')} dBm")
+                print(f"  WiFi Connected: {connectivity.get('connected', False)}")
+            
+            # Firmware information
+            firmware = reported.get("firmware", {})
+            if firmware:
+                print(f"  Firmware Version: {firmware.get('version', 'unknown')}")
+            
+            # Device information
+            device_info = reported.get("deviceInfo", {})
+            if device_info:
+                print(f"  Device Model: {device_info.get('model', 'unknown')}")
+                print(f"  Device Type: {device_info.get('type', 'unknown')}")
+                print(f"  Hardware Version: {device_info.get('hardwareVersion', 'unknown')}")
+            
+            # Last connection time
+            last_connect = reported.get("lastConnect")
+            if last_connect:
+                if isinstance(last_connect, str):
+                    print(f"  Last Connect: {last_connect}")
+                else:
+                    from datetime import datetime
+                    dt = datetime.fromtimestamp(last_connect / 1000)
+                    print(f"  Last Connect: {dt.isoformat()}")
+            
+            # Command information
+            command = reported.get("command", "unknown")
+            print(f"  Command: {command}")
+            
+            # Additional reported data
+            print("\n--- Additional Reported Data ---")
+            for key, value in reported.items():
+                if key not in ['state', 'temperature', 'volume', 'flowRate', 'connected', 
+                              'safetyModeEnabled', 'childModeEnabled', 'battery', 'connectivity', 
+                              'firmware', 'deviceInfo', 'lastConnect', 'command']:
+                    print(f"  {key}: {value}")
 
             if desired:
-                print("  Desired Settings:")
+                print("\n--- Desired Settings ---")
                 for key, value in desired.items():
-                    print(f"    - {key}: {value}")
+                    print(f"  {key}: {value}")
 
             return True
         except Exception as e:
@@ -346,56 +396,6 @@ class MoenAPITester:
             print(f"✗ Failed to get usage data: {e}")
             return False
 
-    def test_device_details(self, device_id: str) -> bool:
-        """Test device details functionality."""
-        print(f"\n=== Testing Device Details for {device_id} ===")
-
-        try:
-            # Test device details call
-            print("Testing device details retrieval...")
-            details = self.api.get_device_details(device_id)
-            print("✓ Successfully retrieved device details")
-
-            # Show the device details
-            print("\nDevice Details:")
-            print(f"  Device ID: {details.get('duid', 'N/A')}")
-            print(f"  Client ID: {details.get('clientId', 'N/A')}")
-            print(f"  Nickname: {details.get('nickname', 'N/A')}")
-            print(f"  Type: {details.get('type', 'N/A')}")
-            print(f"  Connected: {details.get('connected', 'N/A')}")
-
-            # Show connectivity info if available
-            connectivity = details.get("connectivity", {})
-            if connectivity:
-                print(f"  Network: {connectivity.get('net', 'N/A')}")
-                print(f"  RSSI: {connectivity.get('rssi', 'N/A')} dBm")
-
-            # Show firmware info if available
-            firmware = details.get("firmware", {})
-            if firmware:
-                print(f"  Firmware Version: {firmware.get('version', 'N/A')}")
-
-            # Show battery info if available
-            battery = details.get("battery", {})
-            if battery:
-                print(f"  Battery Percentage: {battery.get('percentage', 'N/A')}%")
-
-            # Show power source if available
-            power_source = details.get("powerSource", "N/A")
-            if power_source != "N/A":
-                print(f"  Power Source: {power_source}")
-
-            # Show last connect if available
-            last_connect = details.get("lastConnect", "N/A")
-            if last_connect != "N/A":
-                print(f"  Last Connect: {last_connect}")
-
-            print("\n✓ Device Details test completed successfully!")
-            return True
-
-        except Exception as e:
-            print(f"✗ Device details test failed: {e}")
-            return False
 
     def run_tests(self, test_type: str = "all") -> None:
         """Run specified API tests."""
@@ -433,7 +433,6 @@ class MoenAPITester:
                 if client_id:
                     self.test_device_shadow(client_id)
                     self.test_usage_data(client_id)
-                    self.test_device_details(client_id)
 
                     if test_type in ["all", "water-control"]:
                         # Ask user if they want to test water control
@@ -475,7 +474,6 @@ class MoenAPITester:
         print("\nDevice Management:")
         print("  - get_locations()")
         print("  - list_devices()")
-        print("  - get_device_details(device_id)")
         print("  - get_device_shadow(client_id)")
         print("\nWater Control:")
         print("  - start_water_flow(client_id, temperature, flow_rate)")
