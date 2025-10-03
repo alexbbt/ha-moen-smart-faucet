@@ -85,6 +85,7 @@ class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             # Store updated tokens if they were refreshed
             from . import _store_tokens
+
             await _store_tokens(self.hass, self.entry, self.api.get_tokens())
 
             return {

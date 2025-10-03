@@ -27,11 +27,14 @@ PLATFORMS: list[Platform] = [
 ]
 
 
-async def _store_tokens(hass: HomeAssistant, entry: ConfigEntry, tokens: dict[str, Any]) -> None:
+async def _store_tokens(
+    hass: HomeAssistant, entry: ConfigEntry, tokens: dict[str, Any]
+) -> None:
     """Store tokens in the config entry."""
     # Update the config entry with new tokens
     new_data = {**entry.data, "tokens": tokens}
     hass.config_entries.async_update_entry(entry, data=new_data)
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Moen Smart Water from a config entry."""

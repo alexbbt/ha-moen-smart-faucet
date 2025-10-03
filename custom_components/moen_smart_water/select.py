@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers.entity import EntityCategory
 
 from .coordinator import MoenDataUpdateCoordinator
 
@@ -42,7 +41,9 @@ async def async_setup_entry(
     entities = []
     for device_id, device in devices.items():
         device_name = device.get("name", f"Moen Smart Water {device_id}")
-        entities.append(MoenSelect(coordinator, device_id, device_name, TEMPERATURE_PRESET_SELECT))
+        entities.append(
+            MoenSelect(coordinator, device_id, device_name, TEMPERATURE_PRESET_SELECT)
+        )
 
     async_add_entities(entities)
 
@@ -74,7 +75,9 @@ class MoenSelect(CoordinatorEntity, SelectEntity):
         )
 
         # Set initial option
-        self._attr_current_option = description.options[0] if description.options else ""
+        self._attr_current_option = (
+            description.options[0] if description.options else ""
+        )
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -126,12 +129,16 @@ class MoenSelect(CoordinatorEntity, SelectEntity):
                 elif option == "cold":
                     # Set to a cold temperature (15°C)
                     await self.hass.async_add_executor_job(
-                        self.coordinator.api.set_specific_temperature, self._device_id, 15.0
+                        self.coordinator.api.set_specific_temperature,
+                        self._device_id,
+                        15.0,
                     )
                 elif option == "hot":
                     # Set to a hot temperature (50°C)
                     await self.hass.async_add_executor_job(
-                        self.coordinator.api.set_specific_temperature, self._device_id, 50.0
+                        self.coordinator.api.set_specific_temperature,
+                        self._device_id,
+                        50.0,
                     )
                 elif option == "custom":
                     # For custom, we'll let the user set specific temperature via number entity
@@ -140,9 +147,7 @@ class MoenSelect(CoordinatorEntity, SelectEntity):
                     )
 
             self._attr_current_option = option
-            _LOGGER.info(
-                "Set %s to %s for device %s", key, option, self._device_id
-            )
+            _LOGGER.info("Set %s to %s for device %s", key, option, self._device_id)
         except Exception as err:
             _LOGGER.error(
                 "Failed to set %s for device %s: %s",

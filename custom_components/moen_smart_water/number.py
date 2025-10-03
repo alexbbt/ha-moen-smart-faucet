@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
-from homeassistant.components.number import NumberEntity, NumberMode, NumberEntityDescription
+from homeassistant.components.number import (
+    NumberEntity,
+    NumberEntityDescription,
+    NumberMode,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers.entity import EntityCategory
 
 from .coordinator import MoenDataUpdateCoordinator
 
@@ -64,10 +67,12 @@ async def async_setup_entry(
             "Creating number entities for device %s: %s", device_id, device_name
         )
 
-        entities.extend([
-            MoenNumber(coordinator, device_id, device_name, TEMPERATURE_NUMBER),
-            MoenNumber(coordinator, device_id, device_name, FLOW_RATE_NUMBER),
-        ])
+        entities.extend(
+            [
+                MoenNumber(coordinator, device_id, device_name, TEMPERATURE_NUMBER),
+                MoenNumber(coordinator, device_id, device_name, FLOW_RATE_NUMBER),
+            ]
+        )
 
     _LOGGER.info("Adding %d number entities", len(entities))
     async_add_entities(entities)
@@ -130,7 +135,9 @@ class MoenNumber(CoordinatorEntity, NumberEntity):
         try:
             if key == "temperature":
                 await self.hass.async_add_executor_job(
-                    self.coordinator.api.set_specific_temperature, self._device_id, value
+                    self.coordinator.api.set_specific_temperature,
+                    self._device_id,
+                    value,
                 )
                 self._attr_native_value = value
                 _LOGGER.info(

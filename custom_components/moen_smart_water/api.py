@@ -26,7 +26,9 @@ USER_AGENT = "Smartwater-iOS-prod-3.39.0"
 class MoenAPI:
     """Comprehensive API client for Moen Smart Water operations."""
 
-    def __init__(self, username: str, password: str, tokens: dict[str, Any] | None = None) -> None:
+    def __init__(
+        self, username: str, password: str, tokens: dict[str, Any] | None = None
+    ) -> None:
         """Initialize the Moen API client."""
         self.client_id = CLIENT_ID
         self.username = username
@@ -351,7 +353,9 @@ class MoenAPI:
             _LOGGER.error("Failed to list presets: %s", err)
             raise
 
-    def get_device_details(self, device_id: str, units: str = "imperial") -> dict[str, Any]:
+    def get_device_details(
+        self, device_id: str, units: str = "imperial"
+    ) -> dict[str, Any]:
         """Get detailed device information with all available attributes.
 
         Args:

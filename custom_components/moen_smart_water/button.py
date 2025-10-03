@@ -67,13 +67,15 @@ async def async_setup_entry(
             "Creating button entities for device %s: %s", device_id, device_name
         )
 
-        entities.extend([
-            MoenButton(coordinator, device_id, device_name, START_WATER_BUTTON),
-            MoenButton(coordinator, device_id, device_name, STOP_WATER_BUTTON),
-            MoenButton(coordinator, device_id, device_name, COLDEST_BUTTON),
-            MoenButton(coordinator, device_id, device_name, WARM_BUTTON),
-            MoenButton(coordinator, device_id, device_name, HOTTEST_BUTTON),
-        ])
+        entities.extend(
+            [
+                MoenButton(coordinator, device_id, device_name, START_WATER_BUTTON),
+                MoenButton(coordinator, device_id, device_name, STOP_WATER_BUTTON),
+                MoenButton(coordinator, device_id, device_name, COLDEST_BUTTON),
+                MoenButton(coordinator, device_id, device_name, WARM_BUTTON),
+                MoenButton(coordinator, device_id, device_name, HOTTEST_BUTTON),
+            ]
+        )
 
     _LOGGER.info("Adding %d button entities", len(entities))
     async_add_entities(entities)

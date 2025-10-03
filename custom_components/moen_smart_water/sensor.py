@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorEntityDescription
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers.entity import EntityCategory
 
 from .coordinator import MoenDataUpdateCoordinator
 
@@ -126,25 +130,33 @@ async def async_setup_entry(
         )
 
         # Essential sensors
-        entities.extend([
-            MoenSensor(coordinator, device_id, device_name, FAUCET_STATE_SENSOR),
-            MoenSensor(coordinator, device_id, device_name, LAST_DISPENSE_VOLUME_SENSOR),
-            MoenSensor(coordinator, device_id, device_name, TEMPERATURE_SENSOR),
-            MoenSensor(coordinator, device_id, device_name, FLOW_RATE_SENSOR),
-        ])
+        entities.extend(
+            [
+                MoenSensor(coordinator, device_id, device_name, FAUCET_STATE_SENSOR),
+                MoenSensor(
+                    coordinator, device_id, device_name, LAST_DISPENSE_VOLUME_SENSOR
+                ),
+                MoenSensor(coordinator, device_id, device_name, TEMPERATURE_SENSOR),
+                MoenSensor(coordinator, device_id, device_name, FLOW_RATE_SENSOR),
+            ]
+        )
 
         # Diagnostic sensors
-        entities.extend([
-            MoenSensor(coordinator, device_id, device_name, API_STATUS_SENSOR),
-            MoenSensor(coordinator, device_id, device_name, LAST_UPDATE_SENSOR),
-            MoenSensor(coordinator, device_id, device_name, WIFI_NETWORK_SENSOR),
-            MoenSensor(coordinator, device_id, device_name, WIFI_RSSI_SENSOR),
-            MoenSensor(coordinator, device_id, device_name, WIFI_CONNECTED_SENSOR),
-            MoenSensor(coordinator, device_id, device_name, BATTERY_SENSOR),
-            MoenSensor(coordinator, device_id, device_name, POWER_SOURCE_SENSOR),
-            MoenSensor(coordinator, device_id, device_name, FIRMWARE_VERSION_SENSOR),
-            MoenSensor(coordinator, device_id, device_name, LAST_CONNECT_SENSOR),
-        ])
+        entities.extend(
+            [
+                MoenSensor(coordinator, device_id, device_name, API_STATUS_SENSOR),
+                MoenSensor(coordinator, device_id, device_name, LAST_UPDATE_SENSOR),
+                MoenSensor(coordinator, device_id, device_name, WIFI_NETWORK_SENSOR),
+                MoenSensor(coordinator, device_id, device_name, WIFI_RSSI_SENSOR),
+                MoenSensor(coordinator, device_id, device_name, WIFI_CONNECTED_SENSOR),
+                MoenSensor(coordinator, device_id, device_name, BATTERY_SENSOR),
+                MoenSensor(coordinator, device_id, device_name, POWER_SOURCE_SENSOR),
+                MoenSensor(
+                    coordinator, device_id, device_name, FIRMWARE_VERSION_SENSOR
+                ),
+                MoenSensor(coordinator, device_id, device_name, LAST_CONNECT_SENSOR),
+            ]
+        )
 
     _LOGGER.info("Adding %d sensor entities", len(entities))
     async_add_entities(entities)
@@ -239,20 +251,26 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             # Try device details first, then fall back to shadow
             if details:
                 connectivity = details.get("connectivity", {})
-                self._attr_native_value = connectivity.get("net", state.get("wifiNetwork", "unknown"))
+                self._attr_native_value = connectivity.get(
+                    "net", state.get("wifiNetwork", "unknown")
+                )
             else:
                 self._attr_native_value = state.get("wifiNetwork", "unknown")
         elif key == "wifi_rssi":
             # Try device details first, then fall back to shadow
             if details:
                 connectivity = details.get("connectivity", {})
-                self._attr_native_value = connectivity.get("rssi", state.get("wifiRssi", 0))
+                self._attr_native_value = connectivity.get(
+                    "rssi", state.get("wifiRssi", 0)
+                )
             else:
                 self._attr_native_value = state.get("wifiRssi", 0)
         elif key == "wifi_connected":
             # Try device details first, then fall back to shadow
             if details:
-                self._attr_native_value = "connected" if details.get("connected", False) else "disconnected"
+                self._attr_native_value = (
+                    "connected" if details.get("connected", False) else "disconnected"
+                )
             else:
                 self._attr_native_value = (
                     "connected" if state.get("connected", False) else "disconnected"
@@ -261,21 +279,27 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             # Try device details first, then fall back to shadow
             if details:
                 battery = details.get("battery", {})
-                self._attr_native_value = battery.get("percentage", state.get("batteryPercentage", 100))
+                self._attr_native_value = battery.get(
+                    "percentage", state.get("batteryPercentage", 100)
+                )
             else:
                 self._attr_native_value = state.get("batteryPercentage", 100)
         elif key == "power_source":
             # Try device details first, then fall back to shadow
             if details:
                 battery = details.get("battery", {})
-                self._attr_native_value = battery.get("source", state.get("powerSource", "unknown"))
+                self._attr_native_value = battery.get(
+                    "source", state.get("powerSource", "unknown")
+                )
             else:
                 self._attr_native_value = state.get("powerSource", "unknown")
         elif key == "firmware_version":
             # Try device details first, then fall back to shadow
             if details:
                 firmware = details.get("firmware", {})
-                self._attr_native_value = firmware.get("version", state.get("firmwareVersion", "unknown"))
+                self._attr_native_value = firmware.get(
+                    "version", state.get("firmwareVersion", "unknown")
+                )
             else:
                 self._attr_native_value = state.get("firmwareVersion", "unknown")
         elif key == "last_connect":
@@ -288,6 +312,7 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
 
             if last_connect:
                 from datetime import datetime
+
                 try:
                     dt = datetime.fromtimestamp(last_connect / 1000)
                     self._attr_native_value = dt.isoformat()
