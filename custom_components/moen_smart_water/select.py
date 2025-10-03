@@ -107,7 +107,7 @@ class MoenSelect(CoordinatorEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         key = self.entity_description.key
-        
+
         try:
             if key == "temperature_preset":
                 # Map options to API calls
