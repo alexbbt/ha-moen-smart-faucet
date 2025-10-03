@@ -248,7 +248,7 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
                 self._attr_native_value = datetime.now().isoformat()
             else:
                 self._attr_native_value = "failed"
-        
+
         # Diagnostic sensors from device details only
         elif key == "wifi_network":
             if details:
