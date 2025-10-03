@@ -222,10 +222,13 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             else:
                 self._attr_native_value = "idle"
         elif key == "last_dispense_volume":
-            self._attr_native_value = state.get("lastDispenseVolume")
+            # Device shadow uses 'volume' field, not 'lastDispenseVolume'
+            self._attr_native_value = state.get("volume")
         elif key == "temperature":
             self._attr_native_value = state.get("temperature")
         elif key == "flow_rate":
+            # Flow rate might not be available in device shadow
+            # Set to None if not available
             self._attr_native_value = state.get("flowRate")
         elif key == "api_status":
             if self.coordinator.data:
