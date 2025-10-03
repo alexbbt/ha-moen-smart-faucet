@@ -83,7 +83,9 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
 
         # Valve features
         self._attr_supported_features = (
-            ValveEntityFeature.OPEN | ValveEntityFeature.CLOSE
+            ValveEntityFeature.OPEN
+            | ValveEntityFeature.CLOSE
+            | ValveEntityFeature.SET_POSITION
         )
 
         # Valve state
@@ -232,22 +234,67 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             await self.async_close_valve()
 
     async def async_set_valve_position(self, position: float) -> None:
-        """Set the valve position (flow rate 0-100)."""
+        """Set the valve position (flow rate 0-100) and restart water flow."""
         try:
-            # Update flow rate
-            await self.hass.async_add_executor_job(
-                self.coordinator.api.set_flow_rate, self._device_id, int(position)
-            )
-            self._attr_valve_position = position
             _LOGGER.info(
-                "Set valve position to %d%% for device %s",
+                "Setting valve position to %d%% for device %s",
                 int(position),
                 self._device_id,
             )
+
+            # Update the valve position
+            self._attr_valve_position = int(position)
+
+            # If the valve is currently open (water is flowing), restart with new flow rate
+            if not self._attr_is_closed:
+                _LOGGER.info("Valve is open, restarting water flow with new flow rate")
+
+                # Use appropriate temperature method based on preset mode, like the buttons do
+                if self._attr_preset_mode == "coldest":
+                    await self.hass.async_add_executor_job(
+                        self.coordinator.api.set_coldest,
+                        self._device_id,
+                        int(position),
+                    )
+                elif self._attr_preset_mode == "warm":
+                    await self.hass.async_add_executor_job(
+                        self.coordinator.api.set_warm,
+                        self._device_id,
+                        int(position),
+                    )
+                elif self._attr_preset_mode == "hottest":
+                    await self.hass.async_add_executor_job(
+                        self.coordinator.api.set_hottest,
+                        self._device_id,
+                        int(position),
+                    )
+                else:
+                    # Default to coldest if preset mode is not recognized
+                    await self.hass.async_add_executor_job(
+                        self.coordinator.api.set_coldest,
+                        self._device_id,
+                        int(position),
+                    )
+
+                # Trigger coordinator update to refresh state
+                await self.coordinator.async_request_refresh()
+                _LOGGER.info(
+                    "Successfully restarted water flow with %d%% flow rate for device %s",
+                    int(position),
+                    self._device_id,
+                )
+            else:
+                # Valve is closed, just update the position for next time it opens
+                _LOGGER.info(
+                    "Valve is closed, flow rate set to %d%% for next opening",
+                    int(position),
+                )
+
         except Exception as err:
             _LOGGER.error(
                 "Failed to set valve position for device %s: %s", self._device_id, err
             )
+            raise
 
     async def async_set_temperature(self, temperature: float) -> None:
         """Set the water temperature."""
