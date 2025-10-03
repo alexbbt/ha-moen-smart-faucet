@@ -189,12 +189,9 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
         )
 
         # Set initial value based on sensor type
-        if description.key == "temperature":
-            self._attr_native_value = 20.0
-        elif description.key in ["flow_rate", "battery_percentage"]:
-            self._attr_native_value = 0
-        elif description.key == "last_dispense_volume":
-            self._attr_native_value = 0
+        # Numeric sensors should start with None to avoid ValueError
+        if description.key in ["temperature", "flow_rate", "battery_percentage", "wifi_rssi", "last_dispense_volume"]:
+            self._attr_native_value = None
         else:
             self._attr_native_value = "unknown"
 
