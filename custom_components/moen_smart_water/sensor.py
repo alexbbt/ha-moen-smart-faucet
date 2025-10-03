@@ -26,17 +26,20 @@ TEMPERATURE_SENSOR = SensorEntityDescription(
     name="Temperature",
     native_unit_of_measurement="°C",
     device_class=SensorDeviceClass.TEMPERATURE,
+    icon="mdi:thermometer",
 )
 
 FLOW_RATE_SENSOR = SensorEntityDescription(
     key="flow_rate",
     name="Flow Rate",
     native_unit_of_measurement="%",
+    icon="mdi:water-percent",
 )
 
 FAUCET_STATE_SENSOR = SensorEntityDescription(
     key="faucet_state",
     name="Faucet State",
+    icon="mdi:faucet",
 )
 
 LAST_DISPENSE_VOLUME_SENSOR = SensorEntityDescription(
@@ -44,6 +47,7 @@ LAST_DISPENSE_VOLUME_SENSOR = SensorEntityDescription(
     name="Last Dispense Volume",
     native_unit_of_measurement="μL",
     suggested_unit_of_measurement="ml",
+    icon="mdi:cup-water",
 )
 
 # Diagnostic sensors

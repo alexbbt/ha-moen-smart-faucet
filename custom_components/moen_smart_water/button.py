@@ -19,26 +19,31 @@ _LOGGER = logging.getLogger(__name__)
 START_WATER_BUTTON = ButtonEntityDescription(
     key="start_water",
     name="Start Water",
+    icon="mdi:play",
 )
 
 STOP_WATER_BUTTON = ButtonEntityDescription(
     key="stop_water",
     name="Stop Water",
+    icon="mdi:stop",
 )
 
 COLDEST_BUTTON = ButtonEntityDescription(
     key="coldest",
     name="Coldest",
+    icon="mdi:snowflake",
 )
 
 WARM_BUTTON = ButtonEntityDescription(
     key="warm",
     name="Warm",
+    icon="mdi:thermometer-lines",
 )
 
 HOTTEST_BUTTON = ButtonEntityDescription(
     key="hottest",
     name="Hottest",
+    icon="mdi:fire",
 )
 
 

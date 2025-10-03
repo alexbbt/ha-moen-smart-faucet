@@ -22,6 +22,7 @@ TEMPERATURE_PRESET_SELECT = SelectEntityDescription(
     name="Temperature Preset",
     options=["coldest", "cold", "warm", "hot", "hottest", "custom"],
     entity_category=EntityCategory.CONFIG,
+    icon="mdi:thermometer-lines",
 )
 
 

@@ -29,6 +29,7 @@ TEMPERATURE_NUMBER = NumberEntityDescription(
     native_step=1.0,
     native_unit_of_measurement="°C",
     entity_category=EntityCategory.CONFIG,
+    icon="mdi:thermometer",
 )
 
 FLOW_RATE_NUMBER = NumberEntityDescription(
@@ -39,6 +40,7 @@ FLOW_RATE_NUMBER = NumberEntityDescription(
     native_step=1,
     native_unit_of_measurement="%",
     entity_category=EntityCategory.CONFIG,
+    icon="mdi:water-percent",
 )
 
 

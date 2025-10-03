@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from homeassistant.components.datetime import DateTimeEntity
+from homeassistant.components.datetime import DateTimeEntity, DateTimeEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -16,6 +16,22 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .coordinator import MoenDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
+
+
+DATETIME_DESCRIPTIONS: list[DateTimeEntityDescription] = [
+    DateTimeEntityDescription(
+        key="last_update",
+        name="Last Update",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:update",
+    ),
+    DateTimeEntityDescription(
+        key="last_connect",
+        name="Last Connect",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:clock-outline",
+    ),
+]
 
 
 async def async_setup_entry(
@@ -33,29 +49,15 @@ async def async_setup_entry(
     for device_id, device in coordinator.devices.items():
         device_name = device.get("nickname", f"Moen Device {device_id}")
 
-        # Add last connect datetime entity
-        entities.append(
-            MoenDateTime(
-                coordinator,
-                device_id,
-                device_name,
-                "last_connect",
-                "Last Connect",
-                EntityCategory.DIAGNOSTIC,
+        for description in DATETIME_DESCRIPTIONS:
+            entities.append(
+                MoenDateTime(
+                    coordinator,
+                    device_id,
+                    device_name,
+                    description,
+                )
             )
-        )
-
-        # Add last update datetime entity
-        entities.append(
-            MoenDateTime(
-                coordinator,
-                device_id,
-                device_name,
-                "last_update",
-                "Last Update",
-                EntityCategory.DIAGNOSTIC,
-            )
-        )
 
     _LOGGER.info("Adding %d datetime entities", len(entities))
     async_add_entities(entities)
@@ -69,18 +71,14 @@ class MoenDateTime(CoordinatorEntity, DateTimeEntity):
         coordinator: MoenDataUpdateCoordinator,
         device_id: str,
         device_name: str,
-        key: str,
-        name: str,
-        entity_category: EntityCategory,
+        description: DateTimeEntityDescription,
     ) -> None:
         """Initialize the datetime entity."""
         super().__init__(coordinator)
         self._device_id = device_id
         self._device_name = device_name
-        self._key = key
-        self._attr_name = name
-        self._attr_entity_category = entity_category
-        self._attr_unique_id = f"{device_id}_{key}"
+        self.entity_description = description
+        self._attr_unique_id = f"{device_id}_{description.key}"
         self._attr_has_entity_name = True
 
         # Set initial value
@@ -104,7 +102,7 @@ class MoenDateTime(CoordinatorEntity, DateTimeEntity):
             self.async_write_ha_state()
             return
 
-        if self._key == "last_connect":
+        if self.entity_description.key == "last_connect":
             if details:
                 last_connect = details.get("lastConnect")
                 if last_connect:
@@ -132,7 +130,7 @@ class MoenDateTime(CoordinatorEntity, DateTimeEntity):
             else:
                 self._attr_native_value = None
 
-        elif self._key == "last_update":
+        elif self.entity_description.key == "last_update":
             if self.coordinator.last_update_success:
                 # Use current time as last update time
                 self._attr_native_value = datetime.now(datetime.timezone.utc)

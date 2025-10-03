@@ -26,6 +26,7 @@ VALVE_DESCRIPTIONS: list[ValveEntityDescription] = [
         key="water_control",
         name="Water Control",
         device_class="water",
+        icon="mdi:valve",
     ),
 ]
 
