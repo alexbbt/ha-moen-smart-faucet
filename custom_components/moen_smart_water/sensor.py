@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -43,37 +43,21 @@ async def async_setup_entry(
 
         entities.extend(
             [
+                # Essential user-facing sensors
                 MoenFaucetStateSensor(coordinator, device_id, device_name),
                 MoenLastDispenseVolumeSensor(coordinator, device_id, device_name),
-                MoenCloudConnectedSensor(coordinator, device_id, device_name),
                 MoenTemperatureSensor(coordinator, device_id, device_name),
                 MoenFlowRateSensor(coordinator, device_id, device_name),
-                # Debug sensors
+                # Diagnostic sensors (moved to diagnostic section)
                 MoenApiStatusSensor(coordinator, device_id, device_name),
                 MoenLastUpdateSensor(coordinator, device_id, device_name),
-                # WiFi and connectivity sensors
                 MoenWifiNetworkSensor(coordinator, device_id, device_name),
                 MoenWifiRssiSensor(coordinator, device_id, device_name),
                 MoenWifiConnectedSensor(coordinator, device_id, device_name),
-                # Battery and power sensors
                 MoenBatteryPercentageSensor(coordinator, device_id, device_name),
                 MoenPowerSourceSensor(coordinator, device_id, device_name),
-                MoenBatterySavingLevelSensor(coordinator, device_id, device_name),
-                # Firmware and device info
                 MoenFirmwareVersionSensor(coordinator, device_id, device_name),
                 MoenLastConnectSensor(coordinator, device_id, device_name),
-                # Temperature learning sensors
-                MoenLearnedMinTempSensor(coordinator, device_id, device_name),
-                MoenLearnedMaxTempSensor(coordinator, device_id, device_name),
-                MoenAssemblyAirTempSensor(coordinator, device_id, device_name),
-                # Device configuration sensors
-                MoenDefaultFlowRateSensor(coordinator, device_id, device_name),
-                MoenMaxFlowRateSensor(coordinator, device_id, device_name),
-                MoenSafetyModeEnabledSensor(coordinator, device_id, device_name),
-                MoenChildModeEnabledSensor(coordinator, device_id, device_name),
-                # Additional state sensors
-                MoenIsFreezingSensor(coordinator, device_id, device_name),
-                MoenTemperatureGoalSensor(coordinator, device_id, device_name),
             ]
         )
 
@@ -154,28 +138,6 @@ class MoenLastDispenseVolumeSensor(MoenSensorBase):
         self.async_write_ha_state()
 
 
-class MoenCloudConnectedSensor(MoenSensorBase):
-    """Sensor for cloud connection status."""
-
-    def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
-    ) -> None:
-        """Initialize the cloud connected sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_cloud_connected"
-        self._attr_name = "Cloud Connected"
-        self._attr_native_value = "unknown"
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            self._attr_native_value = "connected"
-        else:
-            self._attr_native_value = "disconnected"
-        self.async_write_ha_state()
-
-
 class MoenTemperatureSensor(MoenSensorBase):
     """Sensor for current water temperature."""
 
@@ -188,6 +150,7 @@ class MoenTemperatureSensor(MoenSensorBase):
         self._attr_name = "Temperature"
         self._attr_native_unit_of_measurement = "°C"
         self._attr_native_value = 20.0
+        self._attr_device_class = SensorDeviceClass.TEMPERATURE
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -233,6 +196,7 @@ class MoenApiStatusSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_api_status"
         self._attr_name = "API Status"
         self._attr_native_value = "unknown"
+        self._attr_entity_category = "diagnostic"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -263,6 +227,7 @@ class MoenLastUpdateSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_last_update"
         self._attr_name = "Last Update"
         self._attr_native_value = "never"
+        self._attr_entity_category = "diagnostic"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -285,6 +250,7 @@ class MoenWifiNetworkSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_wifi_network"
         self._attr_name = "WiFi Network"
         self._attr_native_value = "unknown"
+        self._attr_entity_category = "diagnostic"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -307,6 +273,7 @@ class MoenWifiRssiSensor(MoenSensorBase):
         self._attr_name = "WiFi Signal"
         self._attr_native_unit_of_measurement = "dBm"
         self._attr_native_value = 0
+        self._attr_entity_category = "diagnostic"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -328,6 +295,7 @@ class MoenWifiConnectedSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_wifi_connected"
         self._attr_name = "WiFi Connected"
         self._attr_native_value = "unknown"
+        self._attr_entity_category = "diagnostic"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -353,6 +321,8 @@ class MoenBatteryPercentageSensor(MoenSensorBase):
         self._attr_name = "Battery"
         self._attr_native_unit_of_measurement = "%"
         self._attr_native_value = 100
+        self._attr_device_class = SensorDeviceClass.BATTERY
+        self._attr_entity_category = "diagnostic"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -374,6 +344,7 @@ class MoenPowerSourceSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_power_source"
         self._attr_name = "Power Source"
         self._attr_native_value = "unknown"
+        self._attr_entity_category = "diagnostic"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -381,27 +352,6 @@ class MoenPowerSourceSensor(MoenSensorBase):
         if shadow:
             state = shadow.get("state", {}).get("reported", {})
             self._attr_native_value = state.get("powerSource", "unknown")
-        self.async_write_ha_state()
-
-
-class MoenBatterySavingLevelSensor(MoenSensorBase):
-    """Sensor for battery saving level."""
-
-    def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
-    ) -> None:
-        """Initialize the battery saving level sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_battery_saving_level"
-        self._attr_name = "Battery Saving Level"
-        self._attr_native_value = "unknown"
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = state.get("batterySavingLevel", "unknown")
         self.async_write_ha_state()
 
 
@@ -417,6 +367,7 @@ class MoenFirmwareVersionSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_firmware_version"
         self._attr_name = "Firmware Version"
         self._attr_native_value = "unknown"
+        self._attr_entity_category = "diagnostic"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -438,6 +389,7 @@ class MoenLastConnectSensor(MoenSensorBase):
         self._attr_unique_id = f"{device_id}_last_connect"
         self._attr_name = "Last Connect"
         self._attr_native_value = "never"
+        self._attr_entity_category = "diagnostic"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -456,205 +408,4 @@ class MoenLastConnectSensor(MoenSensorBase):
                     self._attr_native_value = "invalid_timestamp"
             else:
                 self._attr_native_value = "never"
-        self.async_write_ha_state()
-
-
-# Temperature Learning Sensors
-class MoenLearnedMinTempSensor(MoenSensorBase):
-    """Sensor for learned minimum temperature."""
-
-    def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
-    ) -> None:
-        """Initialize the learned min temp sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_learned_min_temp"
-        self._attr_name = "Learned Min Temp"
-        self._attr_native_unit_of_measurement = "°C"
-        self._attr_native_value = 0.0
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = state.get("learnedMinTemp", 0.0)
-        self.async_write_ha_state()
-
-
-class MoenLearnedMaxTempSensor(MoenSensorBase):
-    """Sensor for learned maximum temperature."""
-
-    def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
-    ) -> None:
-        """Initialize the learned max temp sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_learned_max_temp"
-        self._attr_name = "Learned Max Temp"
-        self._attr_native_unit_of_measurement = "°C"
-        self._attr_native_value = 0.0
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = state.get("learnedMaxTemp", 0.0)
-        self.async_write_ha_state()
-
-
-class MoenAssemblyAirTempSensor(MoenSensorBase):
-    """Sensor for assembly air temperature."""
-
-    def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
-    ) -> None:
-        """Initialize the assembly air temp sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_assembly_air_temp"
-        self._attr_name = "Assembly Air Temp"
-        self._attr_native_unit_of_measurement = "°C"
-        self._attr_native_value = 0.0
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = state.get("assemblyAirTemp", 0.0)
-        self.async_write_ha_state()
-
-
-# Device Configuration Sensors
-class MoenDefaultFlowRateSensor(MoenSensorBase):
-    """Sensor for default flow rate."""
-
-    def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
-    ) -> None:
-        """Initialize the default flow rate sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_default_flow_rate"
-        self._attr_name = "Default Flow Rate"
-        self._attr_native_unit_of_measurement = "%"
-        self._attr_native_value = 100
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = state.get("defaultFlowRate", 100)
-        self.async_write_ha_state()
-
-
-class MoenMaxFlowRateSensor(MoenSensorBase):
-    """Sensor for maximum flow rate."""
-
-    def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
-    ) -> None:
-        """Initialize the max flow rate sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_max_flow_rate"
-        self._attr_name = "Max Flow Rate"
-        self._attr_native_unit_of_measurement = "%"
-        self._attr_native_value = 100
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = state.get("maxFlowRate", 100)
-        self.async_write_ha_state()
-
-
-class MoenSafetyModeEnabledSensor(MoenSensorBase):
-    """Sensor for safety mode enabled status."""
-
-    def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
-    ) -> None:
-        """Initialize the safety mode enabled sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_safety_mode_enabled"
-        self._attr_name = "Safety Mode"
-        self._attr_native_value = "unknown"
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = (
-                "enabled" if state.get("safetyModeEnabled", False) else "disabled"
-            )
-        self.async_write_ha_state()
-
-
-class MoenChildModeEnabledSensor(MoenSensorBase):
-    """Sensor for child mode enabled status."""
-
-    def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
-    ) -> None:
-        """Initialize the child mode enabled sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_child_mode_enabled"
-        self._attr_name = "Child Mode"
-        self._attr_native_value = "unknown"
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = (
-                "enabled" if state.get("childModeEnabled", False) else "disabled"
-            )
-        self.async_write_ha_state()
-
-
-# Additional State Sensors
-class MoenIsFreezingSensor(MoenSensorBase):
-    """Sensor for freezing detection."""
-
-    def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
-    ) -> None:
-        """Initialize the is freezing sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_is_freezing"
-        self._attr_name = "Is Freezing"
-        self._attr_native_value = "unknown"
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = "yes" if state.get("isFreezing", False) else "no"
-        self.async_write_ha_state()
-
-
-class MoenTemperatureGoalSensor(MoenSensorBase):
-    """Sensor for temperature goal."""
-
-    def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
-    ) -> None:
-        """Initialize the temperature goal sensor."""
-        super().__init__(coordinator, device_id, device_name)
-        self._attr_unique_id = f"{device_id}_temperature_goal"
-        self._attr_name = "Temperature Goal"
-        self._attr_native_value = "unknown"
-
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        shadow = self.coordinator.get_device_shadow(self._device_id)
-        if shadow:
-            state = shadow.get("state", {}).get("reported", {})
-            self._attr_native_value = state.get("temperatureGoal", "unknown")
         self.async_write_ha_state()
