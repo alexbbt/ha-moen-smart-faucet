@@ -29,8 +29,6 @@ def config_entry() -> ConfigEntry:
     entry.data = {
         "username": "test@example.com",
         "password": "test_password",
-        "client_id": "test_client_id",
-        "client_secret": "test_client_secret",
     }
     return entry
 

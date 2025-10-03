@@ -18,7 +18,9 @@ from pathlib import Path
 from typing import Any
 
 # Import the standalone API class
-from moen_api_standalone import MoenAPI
+import sys
+sys.path.append(str(Path(__file__).parent))
+from moen_api_standalone import MoenAPI, CLIENT_ID
 
 
 class MoenAPITester:
@@ -40,7 +42,7 @@ class MoenAPITester:
                 return None
         return None
 
-    def save_credentials(self, credentials: dict[str, str]) -> None:
+    def sa_credentials(self, credentials: dict[str, str]) -> None:
         """Save credentials to file."""
         try:
             with open(self.credentials_file, "w") as f:
@@ -65,7 +67,7 @@ class MoenAPITester:
 
         if stored_data and "access_token" in stored_data:
             print("Found existing OAuth tokens.")
-            print(f"Client ID: {stored_data.get('client_id', 'unknown')}")
+            print(f"Client ID: {CLIENT_ID} (hardcoded)")
             print(f"Token expires: {stored_data.get('expires_at', 'unknown')}")
 
             use_existing = input("\nUse existing tokens? (y/n): ").lower().strip()
@@ -74,12 +76,10 @@ class MoenAPITester:
 
         # Get new credentials for authentication
         print("\nEnter Moen API credentials for authentication:")
-        client_id = input("Client ID: ").strip()
         username = input("Username (email): ").strip()
         password = input("Password: ").strip()
 
         credentials = {
-            "client_id": client_id,
             "username": username,
             "password": password,
         }
@@ -95,7 +95,6 @@ class MoenAPITester:
             if "access_token" in credentials:
                 # Initialize API with tokens
                 self.api = MoenAPI(
-                    client_id=credentials["client_id"],
                     username="",  # Not needed when using tokens
                     password="",  # Not needed when using tokens
                 )
@@ -115,7 +114,6 @@ class MoenAPITester:
             else:
                 # Initialize API with username/password for authentication
                 self.api = MoenAPI(
-                    client_id=credentials["client_id"],
                     username=credentials["username"],
                     password=credentials["password"],
                 )
@@ -139,7 +137,6 @@ class MoenAPITester:
                 if login_result and "token" in login_result:
                     token_data = login_result["token"]
                     tokens_to_save = {
-                        "client_id": self.api.client_id,
                         "access_token": token_data.get("access_token"),
                         "id_token": token_data.get("id_token"),
                         "refresh_token": token_data.get("refresh_token"),

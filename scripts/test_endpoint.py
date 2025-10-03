@@ -33,7 +33,7 @@ def main():
 
     # Initialize API (will prompt for credentials if needed)
     print("Initializing Moen API...")
-    api = MoenAPI("", "", "")  # Will be set by credentials loading
+    api = MoenAPI("", "")  # Will be set by credentials loading
 
     # Load credentials
     credentials_file = Path(__file__).parent / "moen_credentials.json"

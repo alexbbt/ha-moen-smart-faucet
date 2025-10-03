@@ -31,7 +31,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Initialize the API client
     api = MoenAPI(
-        client_id=entry.data["client_id"],
         username=entry.data["username"],
         password=entry.data["password"],
     )

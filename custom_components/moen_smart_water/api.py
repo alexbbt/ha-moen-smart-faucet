@@ -16,6 +16,9 @@ OAUTH_BASE = "https://4j1gkf0vji.execute-api.us-east-2.amazonaws.com/prod/v1"
 API_BASE = "https://api.prod.iot.moen.com/v3"
 INVOKER_BASE = "https://exo9f857n8.execute-api.us-east-2.amazonaws.com/prod/v1"
 
+# Client ID for Moen Smart Water API (iOS app version 3.39.0)
+CLIENT_ID = "6qn9pep31dglq6ed4fvlq6rp5t"
+
 # User agent from the documentation
 USER_AGENT = "Smartwater-iOS-prod-3.39.0"
 
@@ -23,9 +26,9 @@ USER_AGENT = "Smartwater-iOS-prod-3.39.0"
 class MoenAPI:
     """Comprehensive API client for Moen Smart Water operations."""
 
-    def __init__(self, client_id: str, username: str, password: str) -> None:
+    def __init__(self, username: str, password: str) -> None:
         """Initialize the Moen API client."""
-        self.client_id = client_id
+        self.client_id = CLIENT_ID
         self.username = username
         self.password = password
         self.session = requests.Session()

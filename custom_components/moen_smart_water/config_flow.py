@@ -18,7 +18,6 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required("client_id", default="moen_mobile_app"): str,
         vol.Required(CONF_USERNAME): str,
         vol.Required(CONF_PASSWORD): str,
     }
@@ -36,7 +35,6 @@ class InvalidAuth(HomeAssistantError):
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
     """Validate the user input allows us to connect."""
     api = MoenAPI(
-        client_id=data["client_id"],
         username=data[CONF_USERNAME],
         password=data[CONF_PASSWORD],
     )
