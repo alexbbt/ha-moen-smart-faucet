@@ -85,6 +85,10 @@ class MoenDateTime(CoordinatorEntity, DateTimeEntity):
         # Set initial value
         self._attr_native_value = None
 
+        # Make datetime entities read-only (diagnostic entities)
+        self._attr_entity_registry_visible_default = True
+        self._attr_entity_registry_enabled_default = True
+
         # Device info
         self._attr_device_info = DeviceInfo(
             identifiers={("moen_smart_water", device_id)},
@@ -139,3 +143,7 @@ class MoenDateTime(CoordinatorEntity, DateTimeEntity):
                 self._attr_native_value = None
 
         self.async_write_ha_state()
+
+    async def async_set_value(self, value: datetime) -> None:
+        """Set the datetime value - not supported for read-only diagnostic entities."""
+        raise NotImplementedError("Datetime entities are read-only diagnostic entities")
