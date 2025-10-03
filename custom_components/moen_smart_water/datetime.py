@@ -46,7 +46,8 @@ async def async_setup_entry(
 
     entities = []
 
-    for device_id, device in coordinator.devices.items():
+    devices = coordinator.get_all_devices()
+    for device_id, device in devices.items():
         device_name = device.get("nickname", f"Moen Device {device_id}")
 
         for description in DATETIME_DESCRIPTIONS:
