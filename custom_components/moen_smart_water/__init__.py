@@ -4,6 +4,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+__version__ = "0.8.1"
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
