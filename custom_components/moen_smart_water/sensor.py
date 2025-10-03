@@ -275,8 +275,8 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
                 self._attr_native_value = None
         elif key == "power_source":
             if details:
-                battery = details.get("battery", {})
-                self._attr_native_value = battery.get("source")
+                # Power source is at the top level, not in battery object
+                self._attr_native_value = details.get("powerSource")
             else:
                 self._attr_native_value = None
         elif key == "firmware_version":
@@ -289,13 +289,18 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             if details:
                 last_connect = details.get("lastConnect")
                 if last_connect:
-                    from datetime import datetime
-
-                    try:
-                        dt = datetime.fromtimestamp(last_connect / 1000)
-                        self._attr_native_value = dt.isoformat()
-                    except (ValueError, TypeError):
-                        self._attr_native_value = "invalid_timestamp"
+                    # Check if it's already an ISO string or a timestamp
+                    if isinstance(last_connect, str):
+                        # Already in ISO format
+                        self._attr_native_value = last_connect
+                    else:
+                        # Convert timestamp to ISO format
+                        from datetime import datetime
+                        try:
+                            dt = datetime.fromtimestamp(last_connect / 1000)
+                            self._attr_native_value = dt.isoformat()
+                        except (ValueError, TypeError):
+                            self._attr_native_value = "invalid_timestamp"
                 else:
                     self._attr_native_value = None
             else:
