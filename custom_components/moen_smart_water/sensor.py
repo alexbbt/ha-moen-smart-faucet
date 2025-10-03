@@ -42,7 +42,7 @@ FAUCET_STATE_SENSOR = SensorEntityDescription(
 LAST_DISPENSE_VOLUME_SENSOR = SensorEntityDescription(
     key="last_dispense_volume",
     name="Last Dispense Volume",
-    native_unit_of_measurement="ml",
+    native_unit_of_measurement="μL",
 )
 
 # Diagnostic sensors
