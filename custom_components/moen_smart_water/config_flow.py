@@ -19,11 +19,6 @@ class MoenSmartWaterConfigFlow(config_entries.ConfigFlow):
 
     VERSION = 1
 
-    @property
-    def domain(self) -> str:
-        """Return the domain."""
-        return "moen_smart_water"
-
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:

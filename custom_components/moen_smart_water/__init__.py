@@ -5,13 +5,14 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
 from .api import MoenAPI
+from .config_flow import MoenSmartWaterConfigFlow
 from .coordinator import MoenDataUpdateCoordinator
 from .services import async_setup_services
 
@@ -24,6 +25,14 @@ PLATFORMS: list[Platform] = [
     Platform.SELECT,
     Platform.VALVE,
 ]
+
+
+async def async_setup(hass: HomeAssistant) -> bool:
+    """Set up the Moen Smart Water integration."""
+    hass.config_entries.flow.async_register_flow(
+        "moen_smart_water", MoenSmartWaterConfigFlow
+    )
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
