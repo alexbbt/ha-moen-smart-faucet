@@ -27,6 +27,7 @@ class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.entry = entry
         self._devices: dict[str, dict[str, Any]] = {}
         self._device_shadows: dict[str, dict[str, Any]] = {}
+        self._device_details: dict[str, dict[str, Any]] = {}
 
         super().__init__(
             hass,
@@ -51,8 +52,10 @@ class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             # Get device shadows for all devices
             device_shadows = {}
+            device_details = {}
             for device_id in self._devices.keys():
                 try:
+                    # Get device shadow
                     shadow = await self.hass.async_add_executor_job(
                         self.api.get_device_shadow, device_id
                     )
@@ -64,7 +67,21 @@ class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     # Use empty shadow if we can't get it
                     device_shadows[device_id] = {}
 
+                try:
+                    # Get device details with expanded attributes
+                    details = await self.hass.async_add_executor_job(
+                        self.api.get_device_details, device_id
+                    )
+                    device_details[device_id] = details
+                except Exception as err:
+                    _LOGGER.warning(
+                        "Failed to get device details for %s: %s", device_id, err
+                    )
+                    # Use empty details if we can't get it
+                    device_details[device_id] = {}
+
             self._device_shadows = device_shadows
+            self._device_details = device_details
 
             # Store updated tokens if they were refreshed
             from . import _store_tokens
@@ -73,6 +90,7 @@ class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return {
                 "devices": self._devices,
                 "device_shadows": self._device_shadows,
+                "device_details": self._device_details,
             }
 
         except Exception as err:
@@ -94,3 +112,11 @@ class MoenDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def get_all_device_shadows(self) -> dict[str, dict[str, Any]]:
         """Get all device shadows."""
         return self._device_shadows
+
+    def get_device_details(self, device_id: str) -> dict[str, Any] | None:
+        """Get device details with expanded attributes by ID."""
+        return self._device_details.get(device_id)
+
+    def get_all_device_details(self) -> dict[str, dict[str, Any]]:
+        """Get all device details with expanded attributes."""
+        return self._device_details

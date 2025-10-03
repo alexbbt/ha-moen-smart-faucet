@@ -351,14 +351,17 @@ class MoenAPI:
             _LOGGER.error("Failed to list presets: %s", err)
             raise
 
-    def get_device_details(
-        self, device_id: str, expand: str = "addons", units: str = "imperial"
-    ) -> dict[str, Any]:
-        """Get detailed device information."""
+    def get_device_details(self, device_id: str, units: str = "imperial") -> dict[str, Any]:
+        """Get detailed device information with all available attributes.
+
+        Args:
+            device_id: The device ID to get details for
+            units: Units for measurements ("imperial" or "metric")
+        """
         self._ensure_auth()
 
         url = f"{API_BASE}/device/{device_id}"
-        params = {"expand": expand, "units": units}
+        params = {"expand": "addons", "units": units}
 
         try:
             response = self.session.get(url, params=params, timeout=30)

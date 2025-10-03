@@ -343,6 +343,57 @@ class MoenAPITester:
             print(f"✗ Failed to get usage data: {e}")
             return False
 
+    def test_device_details(self, device_id: str) -> bool:
+        """Test device details functionality."""
+        print(f"\n=== Testing Device Details for {device_id} ===")
+
+        try:
+            # Test device details call
+            print("Testing device details retrieval...")
+            details = self.api.get_device_details(device_id)
+            print("✓ Successfully retrieved device details")
+
+            # Show the device details
+            print(f"\nDevice Details:")
+            print(f"  Device ID: {details.get('duid', 'N/A')}")
+            print(f"  Client ID: {details.get('clientId', 'N/A')}")
+            print(f"  Nickname: {details.get('nickname', 'N/A')}")
+            print(f"  Type: {details.get('type', 'N/A')}")
+            print(f"  Connected: {details.get('connected', 'N/A')}")
+
+            # Show connectivity info if available
+            connectivity = details.get('connectivity', {})
+            if connectivity:
+                print(f"  Network: {connectivity.get('net', 'N/A')}")
+                print(f"  RSSI: {connectivity.get('rssi', 'N/A')} dBm")
+
+            # Show firmware info if available
+            firmware = details.get('firmware', {})
+            if firmware:
+                print(f"  Firmware Version: {firmware.get('version', 'N/A')}")
+
+            # Show battery info if available
+            battery = details.get('battery', {})
+            if battery:
+                print(f"  Battery Percentage: {battery.get('percentage', 'N/A')}%")
+
+            # Show power source if available
+            power_source = details.get('powerSource', 'N/A')
+            if power_source != 'N/A':
+                print(f"  Power Source: {power_source}")
+
+            # Show last connect if available
+            last_connect = details.get('lastConnect', 'N/A')
+            if last_connect != 'N/A':
+                print(f"  Last Connect: {last_connect}")
+
+            print(f"\n✓ Device Details test completed successfully!")
+            return True
+
+        except Exception as e:
+            print(f"✗ Device details test failed: {e}")
+            return False
+
     def run_tests(self, test_type: str = "all") -> None:
         """Run specified API tests."""
         print("Moen Smart Faucet API Tester")
@@ -379,6 +430,7 @@ class MoenAPITester:
                 if client_id:
                     self.test_device_shadow(client_id)
                     self.test_usage_data(client_id)
+                    self.test_device_details(client_id)
 
                     if test_type in ["all", "water-control"]:
                         # Ask user if they want to test water control
