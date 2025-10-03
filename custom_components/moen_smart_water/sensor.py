@@ -260,5 +260,3 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
                 self._attr_native_value = "never"
 
         self.async_write_ha_state()
-
-
