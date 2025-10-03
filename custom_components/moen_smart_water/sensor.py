@@ -249,17 +249,20 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             # Set to None if not available
             self._attr_native_value = state.get("flowRate")
         elif key == "api_status":
-            if self.coordinator.data:
-                devices = self.coordinator.data.get("devices", {})
-                device_shadows = self.coordinator.data.get("device_shadows", {})
-                if self._device_id in devices and self._device_id in device_shadows:
-                    self._attr_native_value = "connected"
-                elif self._device_id in devices:
-                    self._attr_native_value = "device_found_no_shadow"
+            if shadow:
+                # Use actual API values for connected and state
+                device_data = self.coordinator.get_device(self._device_id)
+                if device_data:
+                    connected = device_data.get("connected", False)
+                    state = device_data.get("state", "unknown")
+                    if connected:
+                        self._attr_native_value = f"Connected - {state.title()}"
+                    else:
+                        self._attr_native_value = "Disconnected"
                 else:
-                    self._attr_native_value = "device_not_found"
+                    self._attr_native_value = "Device Not Found"
             else:
-                self._attr_native_value = "no_data"
+                self._attr_native_value = "No Data"
         elif key == "last_update":
             if self.coordinator.last_update_success:
                 from datetime import datetime, timezone
