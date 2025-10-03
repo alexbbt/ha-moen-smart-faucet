@@ -122,7 +122,7 @@ class MoenDateTime(CoordinatorEntity, DateTimeEntity):
                             dt = datetime.fromtimestamp(last_connect / 1000)
                             # Assume UTC if no timezone info
                             if dt.tzinfo is None:
-                                dt = dt.replace(tzinfo=datetime.timezone.utc)
+                                dt = dt.replace(tzinfo=datetime.UTC)
                             self._attr_native_value = dt
                         except (ValueError, TypeError):
                             self._attr_native_value = None
@@ -134,7 +134,7 @@ class MoenDateTime(CoordinatorEntity, DateTimeEntity):
         elif self.entity_description.key == "last_update":
             if self.coordinator.last_update_success:
                 # Use current time as last update time
-                self._attr_native_value = datetime.now(datetime.timezone.utc)
+                self._attr_native_value = datetime.now(datetime.UTC)
             else:
                 self._attr_native_value = None
 
