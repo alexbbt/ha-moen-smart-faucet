@@ -5,12 +5,10 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import voluptuous as vol
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_entry_oauth2_flow
 
 from .api import CLIENT_ID, MoenAPI
-from .oauth2_impl import MoenOAuth2Implementation
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,44 +66,31 @@ class MoenSmartWaterConfigFlow(config_entry_oauth2_flow.AbstractOAuth2FlowHandle
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
-        if not self.flow_impl:
-            return self.async_abort(reason="missing_configuration")
         return await self.async_step_pick_implementation()
 
     async def async_step_pick_implementation(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the step to pick implementation."""
-        if user_input is not None:
-            await self.async_set_external_data(
-                {"implementation": user_input["implementation"]}
-            )
-            return await self.async_step_auth()
-
         implementations = await self.async_get_implementations()
         if not implementations:
             return self.async_abort(reason="missing_configuration")
 
-        return self.async_show_form(
-            step_id="pick_implementation",
-            data_schema=vol.Schema(
-                {
-                    vol.Required("implementation"): vol.In(
-                        {impl.domain: impl.name for impl in implementations}
-                    )
-                }
-            ),
-        )
+        # Use the first (and only) implementation
+        self.flow_impl = implementations[0]
+        return await self.async_step_auth()
 
     async def async_get_implementations(
         self,
     ) -> list[config_entry_oauth2_flow.LocalOAuth2Implementation]:
         """Return list of OAuth2 implementations."""
         return [
-            MoenOAuth2Implementation(
+            config_entry_oauth2_flow.LocalOAuth2Implementation(
                 self.hass,
                 "moen_smart_water",
                 CLIENT_ID,
                 "",  # Client secret will be provided by application_credentials
+                "https://4j1gkf0vji.execute-api.us-east-2.amazonaws.com/prod/v1/oauth2/authorize",
+                "https://4j1gkf0vji.execute-api.us-east-2.amazonaws.com/prod/v1/oauth2/token",
             )
         ]

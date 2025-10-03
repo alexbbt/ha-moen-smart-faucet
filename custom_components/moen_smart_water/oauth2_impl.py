@@ -26,4 +26,4 @@ class MoenOAuth2Implementation(config_entry_oauth2_flow.LocalOAuth2Implementatio
         """Resolve external data to tokens."""
         # The external data should already contain the tokens from the OAuth2 flow
         # Return the token data that will be stored in the config entry
-        return {"token": external_data}
+        return external_data
