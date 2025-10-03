@@ -127,11 +127,10 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
 
             # Update valve position (flow rate) - only when running
             if command == "run":
-                self._attr_valve_position = state.get(
-                    "flowRate", 50
-                )  # Default to 50% if not specified
-            else:
-                self._attr_valve_position = 0
+                # Get flow rate from API and map it to valve position (0-100%)
+                api_flow_rate = state.get("flowRate", 100)
+                self._attr_valve_position = api_flow_rate
+            # Don't reset position to 0 when stopped - keep last known position for next open
 
             # Update temperature
             self._attr_temperature = state.get("temperature", 20.0)
@@ -156,13 +155,24 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
         try:
             _LOGGER.info("Opening valve for device %s", self._device_id)
 
-            # Call the API to start water flow
+            # Call the API to start water flow - use valve position as flow rate percentage
+            # If valve is closed (0%), default to 100% flow rate like start water button
+            flow_rate = (
+                int(self._attr_valve_position) if self._attr_valve_position > 0 else 100
+            )
+            temperature = (
+                self._attr_preset_mode if self._attr_preset_mode else "coldest"
+            )
+
             await self.hass.async_add_executor_job(
                 self.coordinator.api.start_water_flow,
                 self._device_id,
-                self._attr_preset_mode,
-                int(self._attr_valve_position),
+                temperature,
+                flow_rate,
             )
+
+            # Update valve position to reflect actual flow rate
+            self._attr_valve_position = flow_rate
 
             # Trigger coordinator update to refresh state
             await self.coordinator.async_request_refresh()
