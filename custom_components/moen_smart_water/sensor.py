@@ -204,7 +204,7 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
         elif description.key == "api_status":
             self._attr_native_value = "checking"
         elif description.key == "last_update":
-            self._attr_native_value = "pending"
+            self._attr_native_value = None
         else:
             self._attr_native_value = "loading"
 
