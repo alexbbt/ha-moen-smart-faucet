@@ -192,8 +192,12 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
         # Numeric sensors should start with None to avoid ValueError
         if description.key in ["temperature", "flow_rate", "battery_percentage", "wifi_rssi", "last_dispense_volume"]:
             self._attr_native_value = None
+        elif description.key == "api_status":
+            self._attr_native_value = "checking"
+        elif description.key == "last_update":
+            self._attr_native_value = "pending"
         else:
-            self._attr_native_value = "unknown"
+            self._attr_native_value = "loading"
 
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
