@@ -5,7 +5,11 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant.components.valve import ValveEntity, ValveEntityFeature
+from homeassistant.components.valve import (
+    ValveEntity,
+    ValveEntityDescription,
+    ValveEntityFeature,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -15,6 +19,15 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .coordinator import MoenDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
+
+
+VALVE_DESCRIPTIONS: list[ValveEntityDescription] = [
+    ValveEntityDescription(
+        key="water_control",
+        name="Water Control",
+        device_class="water",
+    ),
+]
 
 
 async def async_setup_entry(
@@ -39,7 +52,11 @@ async def async_setup_entry(
     for device_id, device in devices.items():
         device_name = device.get("name", f"Moen Smart Water {device_id}")
         _LOGGER.info("Creating valve entity for device %s: %s", device_id, device_name)
-        entities.append(MoenFaucetValve(coordinator, device_id, device_name))
+
+        for description in VALVE_DESCRIPTIONS:
+            entities.append(
+                MoenFaucetValve(coordinator, device_id, device_name, description)
+            )
 
     _LOGGER.info("Adding %d valve entities", len(entities))
     async_add_entities(entities)
@@ -49,14 +66,18 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
     """Valve entity for Moen Smart Water water control."""
 
     def __init__(
-        self, coordinator: MoenDataUpdateCoordinator, device_id: str, device_name: str
+        self,
+        coordinator: MoenDataUpdateCoordinator,
+        device_id: str,
+        device_name: str,
+        description: ValveEntityDescription,
     ) -> None:
         """Initialize the valve entity."""
         super().__init__(coordinator)
         self._device_id = device_id
         self._device_name = device_name
-        self._attr_unique_id = f"{device_id}_valve"
-        self._attr_name = "Water Control"
+        self.entity_description = description
+        self._attr_unique_id = f"{device_id}_{description.key}"
         self._attr_has_entity_name = True
 
         # Valve features
@@ -70,12 +91,6 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
         self._attr_is_closing = False
         self._attr_valve_position = 0  # 0-100 for flow rate
         self._attr_reports_position = True  # Required for valve entities
-
-        # Device class for better UI representation
-        self._attr_device_class = "water"
-
-        # Track previous state for stopped detection
-        self._previous_is_closed = True
 
         # Additional attributes for temperature and status
         self._attr_temperature = 20.0
@@ -98,34 +113,24 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
 
             # Update valve state based on command
             command = state.get("command", "stop")
+
+            # Simple state mapping: "run" = open, "stop" = closed
             if command == "run":
-                # Valve is running - check if it was previously closed to determine opening state
-                if self._previous_is_closed:
-                    self._attr_is_opening = True
-                    self._attr_is_closing = False
-                else:
-                    self._attr_is_opening = False
-                    self._attr_is_closing = False
                 self._attr_is_closed = False
-            elif command == "stop":
-                # Valve stopped - check if it was previously opening/closing to determine stopped state
-                if self._attr_is_opening or self._attr_is_closing:
-                    # Valve was in motion and now stopped - this is "stopped" state
-                    # In Home Assistant, "stopped" means neither fully open nor fully closed
-                    self._attr_is_closed = False
-                    self._attr_is_opening = False
-                    self._attr_is_closing = False
-                else:
-                    # Valve was idle and now stopped - this is "closed" state
-                    self._attr_is_closed = True
-                    self._attr_is_opening = False
-                    self._attr_is_closing = False
+                self._attr_is_opening = False
+                self._attr_is_closing = False
+            else:  # "stop" or any other command
+                self._attr_is_closed = True
+                self._attr_is_opening = False
+                self._attr_is_closing = False
 
-            # Update previous state for next comparison
-            self._previous_is_closed = self._attr_is_closed
-
-            # Update valve position (flow rate)
-            self._attr_valve_position = state.get("flowRate", 0)
+            # Update valve position (flow rate) - only when running
+            if command == "run":
+                self._attr_valve_position = state.get(
+                    "flowRate", 50
+                )  # Default to 50% if not specified
+            else:
+                self._attr_valve_position = 0
 
             # Update temperature
             self._attr_temperature = state.get("temperature", 20.0)
@@ -133,10 +138,13 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             # Update extra state attributes
             self._attr_extra_state_attributes.update(
                 {
-                    "last_dispense_volume": state.get("lastDispenseVolume", 0),
+                    "last_dispense_volume": state.get(
+                        "volume", 0
+                    ),  # Use 'volume' field from API
                     "command": command,
                     "flow_rate": self._attr_valve_position,
                     "temperature": self._attr_temperature,
+                    "faucet_state": "running" if command == "run" else "idle",
                 }
             )
 
@@ -145,12 +153,9 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
     async def async_open_valve(self, **kwargs: Any) -> None:
         """Open the valve (start water flow)."""
         try:
-            # Set opening state before API call
-            self._attr_is_opening = True
-            self._attr_is_closing = False
-            self._attr_is_closed = False
-            self.async_write_ha_state()
+            _LOGGER.info("Opening valve for device %s", self._device_id)
 
+            # Call the API to start water flow
             await self.hass.async_add_executor_job(
                 self.coordinator.api.start_water_flow,
                 self._device_id,
@@ -158,44 +163,35 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
                 int(self._attr_valve_position),
             )
 
-            # After successful API call, valve is now open
-            self._attr_is_opening = False
-            self._attr_is_closed = False
-            self._previous_is_closed = False
-            _LOGGER.info("Opened valve for device %s", self._device_id)
+            # Trigger coordinator update to refresh state
+            await self.coordinator.async_request_refresh()
+            _LOGGER.info("Successfully opened valve for device %s", self._device_id)
+
         except Exception as err:
-            # Reset state on error
-            self._attr_is_opening = False
-            self._attr_is_closed = True
             _LOGGER.error(
                 "Failed to open valve for device %s: %s", self._device_id, err
             )
+            raise
 
     async def async_close_valve(self, **kwargs: Any) -> None:
         """Close the valve (stop water flow)."""
         try:
-            # Set closing state before API call
-            self._attr_is_closing = True
-            self._attr_is_opening = False
-            self._attr_is_closed = False
-            self.async_write_ha_state()
+            _LOGGER.info("Closing valve for device %s", self._device_id)
 
+            # Call the API to stop water flow
             await self.hass.async_add_executor_job(
                 self.coordinator.api.stop_water_flow, self._device_id
             )
 
-            # After successful API call, valve is now closed
-            self._attr_is_closing = False
-            self._attr_is_closed = True
-            self._previous_is_closed = True
-            _LOGGER.info("Closed valve for device %s", self._device_id)
+            # Trigger coordinator update to refresh state
+            await self.coordinator.async_request_refresh()
+            _LOGGER.info("Successfully closed valve for device %s", self._device_id)
+
         except Exception as err:
-            # Reset state on error
-            self._attr_is_closing = False
-            self._attr_is_closed = True
             _LOGGER.error(
                 "Failed to close valve for device %s: %s", self._device_id, err
             )
+            raise
 
     async def async_stop_valve(self, **kwargs: Any) -> None:
         """Stop the valve (same as close for faucet)."""
