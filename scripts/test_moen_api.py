@@ -13,14 +13,15 @@ Usage:
 
 import argparse
 import json
+
+# Import the standalone API class
+import sys
 import time
 from pathlib import Path
 from typing import Any
 
-# Import the standalone API class
-import sys
 sys.path.append(str(Path(__file__).parent))
-from moen_api_standalone import MoenAPI, CLIENT_ID
+from moen_api_standalone import CLIENT_ID, MoenAPI
 
 
 class MoenAPITester:
@@ -162,7 +163,9 @@ class MoenAPITester:
                             self.save_tokens(tokens_to_save)
                             print("✓ OAuth tokens saved for future use")
                 else:
-                    print("No refresh token available, logging in with username/password...")
+                    print(
+                        "No refresh token available, logging in with username/password..."
+                    )
                     login_result = self.api.login()
                     print("✓ Authentication successful")
 
@@ -354,7 +357,7 @@ class MoenAPITester:
             print("✓ Successfully retrieved device details")
 
             # Show the device details
-            print(f"\nDevice Details:")
+            print("\nDevice Details:")
             print(f"  Device ID: {details.get('duid', 'N/A')}")
             print(f"  Client ID: {details.get('clientId', 'N/A')}")
             print(f"  Nickname: {details.get('nickname', 'N/A')}")
@@ -362,32 +365,32 @@ class MoenAPITester:
             print(f"  Connected: {details.get('connected', 'N/A')}")
 
             # Show connectivity info if available
-            connectivity = details.get('connectivity', {})
+            connectivity = details.get("connectivity", {})
             if connectivity:
                 print(f"  Network: {connectivity.get('net', 'N/A')}")
                 print(f"  RSSI: {connectivity.get('rssi', 'N/A')} dBm")
 
             # Show firmware info if available
-            firmware = details.get('firmware', {})
+            firmware = details.get("firmware", {})
             if firmware:
                 print(f"  Firmware Version: {firmware.get('version', 'N/A')}")
 
             # Show battery info if available
-            battery = details.get('battery', {})
+            battery = details.get("battery", {})
             if battery:
                 print(f"  Battery Percentage: {battery.get('percentage', 'N/A')}%")
 
             # Show power source if available
-            power_source = details.get('powerSource', 'N/A')
-            if power_source != 'N/A':
+            power_source = details.get("powerSource", "N/A")
+            if power_source != "N/A":
                 print(f"  Power Source: {power_source}")
 
             # Show last connect if available
-            last_connect = details.get('lastConnect', 'N/A')
-            if last_connect != 'N/A':
+            last_connect = details.get("lastConnect", "N/A")
+            if last_connect != "N/A":
                 print(f"  Last Connect: {last_connect}")
 
-            print(f"\n✓ Device Details test completed successfully!")
+            print("\n✓ Device Details test completed successfully!")
             return True
 
         except Exception as e:

@@ -14,7 +14,7 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 # Import the actual API class and constants from the integration
-from custom_components.moen_smart_water.api import MoenAPI, CLIENT_ID
+from custom_components.moen_smart_water.api import CLIENT_ID, MoenAPI  # noqa: E402
 
 # Re-export the class and constants for easy importing
-__all__ = ['MoenAPI', 'CLIENT_ID']
+__all__ = ["MoenAPI", "CLIENT_ID"]

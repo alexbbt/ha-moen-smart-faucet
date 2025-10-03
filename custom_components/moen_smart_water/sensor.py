@@ -190,7 +190,13 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
 
         # Set initial value based on sensor type
         # Numeric sensors should start with None to avoid ValueError
-        if description.key in ["temperature", "flow_rate", "battery_percentage", "wifi_rssi", "last_dispense_volume"]:
+        if description.key in [
+            "temperature",
+            "flow_rate",
+            "battery_percentage",
+            "wifi_rssi",
+            "last_dispense_volume",
+        ]:
             self._attr_native_value = None
         elif description.key == "api_status":
             self._attr_native_value = "checking"
@@ -303,6 +309,7 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
                     else:
                         # Convert timestamp to ISO format
                         from datetime import datetime
+
                         try:
                             dt = datetime.fromtimestamp(last_connect / 1000)
                             self._attr_native_value = dt.isoformat()

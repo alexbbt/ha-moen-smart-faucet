@@ -57,6 +57,7 @@ def main():
 
             # Check if token needs refresh
             import time
+
             if time.time() > api.token_expiry:
                 if api.refresh_token:
                     print("Token expired, attempting refresh...")
@@ -64,6 +65,7 @@ def main():
                         print("✓ Token refreshed successfully")
                         # Save refreshed tokens
                         import json
+
                         refreshed_creds = {
                             "access_token": api.access_token,
                             "id_token": api.id_token,

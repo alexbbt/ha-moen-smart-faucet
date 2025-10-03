@@ -15,6 +15,24 @@
 - Use `ruff` for linting and formatting (configured in pyproject.toml)
 - Use `mypy` for type checking
 
+## Pre-commit Requirements
+- ALWAYS run `ruff check` and `ruff format` before committing
+- ALWAYS run `mypy` type checking before committing
+- Fix all linting errors before committing code
+- Ensure all type checking passes before committing
+- Use `source ./venv/bin/activate && ruff check . && ruff format . && mypy .` before git commit
+
+## Standard Pre-commit Command Sequence
+```bash
+cd /Users/alexbbt/Development/ha/ha-moen-smart-faucet
+source ./venv/bin/activate
+ruff check .
+ruff format .
+mypy .
+git add -A
+git commit -m "Your commit message"
+```
+
 ## Project Structure
 - This is a Home Assistant custom component for Moen Smart Faucet integration
 - Main code is in `custom_components/moen_smart_water/`
