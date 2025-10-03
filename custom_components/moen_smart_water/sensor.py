@@ -59,7 +59,9 @@ API_STATUS_SENSOR = SensorEntityDescription(
 LAST_UPDATE_SENSOR = SensorEntityDescription(
     key="last_update",
     name="Last Update",
+    device_class=SensorDeviceClass.TIMESTAMP,
     entity_category=EntityCategory.DIAGNOSTIC,
+    icon="mdi:update",
 )
 
 WIFI_NETWORK_SENSOR = SensorEntityDescription(
@@ -104,7 +106,9 @@ FIRMWARE_VERSION_SENSOR = SensorEntityDescription(
 LAST_CONNECT_SENSOR = SensorEntityDescription(
     key="last_connect",
     name="Last Connect",
+    device_class=SensorDeviceClass.TIMESTAMP,
     entity_category=EntityCategory.DIAGNOSTIC,
+    icon="mdi:clock-outline",
 )
 
 
@@ -265,9 +269,9 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             if self.coordinator.last_update_success:
                 from datetime import datetime
 
-                self._attr_native_value = datetime.now().isoformat()
+                self._attr_native_value = datetime.now(datetime.UTC)
             else:
-                self._attr_native_value = "failed"
+                self._attr_native_value = None
 
         # Diagnostic sensors from device details only
         elif key == "wifi_network":
@@ -311,19 +315,23 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             if details:
                 last_connect = details.get("lastConnect")
                 if last_connect:
-                    # Check if it's already an ISO string or a timestamp
-                    if isinstance(last_connect, str):
-                        # Already in ISO format
-                        self._attr_native_value = last_connect
-                    else:
-                        # Convert timestamp to ISO format
-                        from datetime import datetime
+                    from datetime import datetime
 
-                        try:
-                            dt = datetime.fromtimestamp(last_connect / 1000)
-                            self._attr_native_value = dt.isoformat()
-                        except (ValueError, TypeError):
-                            self._attr_native_value = "invalid_timestamp"
+                    try:
+                        if isinstance(last_connect, str):
+                            # Parse ISO string
+                            dt = datetime.fromisoformat(
+                                last_connect.replace("Z", "+00:00")
+                            )
+                            self._attr_native_value = dt
+                        else:
+                            # Convert timestamp to datetime
+                            dt = datetime.fromtimestamp(
+                                last_connect / 1000, tz=datetime.UTC
+                            )
+                            self._attr_native_value = dt
+                    except (ValueError, TypeError):
+                        self._attr_native_value = None
                 else:
                     self._attr_native_value = None
             else:
