@@ -252,7 +252,19 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             if int(position) == 0:
                 if not self._attr_is_closed:
                     _LOGGER.info("Position set to 0%, closing valve")
-                    await self.async_close_valve()
+                    # Call stop_water_flow directly like the stop button does
+                    await self.hass.async_add_executor_job(
+                        self.coordinator.api.stop_water_flow, self._device_id
+                    )
+                    # Immediately update valve state to closed
+                    self._attr_is_closed = True
+                    self._attr_is_opening = False
+                    self._attr_is_closing = False
+                    # Update Home Assistant state immediately
+                    self.async_write_ha_state()
+                    _LOGGER.info(
+                        "Successfully stopped water flow for device %s", self._device_id
+                    )
                 else:
                     _LOGGER.info("Valve already closed")
             else:
