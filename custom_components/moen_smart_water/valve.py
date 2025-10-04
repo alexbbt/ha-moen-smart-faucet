@@ -114,26 +114,40 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
         if shadow:
             state = shadow.get("state", {}).get("reported", {})
 
-            # Update valve state based on device state
+            # Update valve state based on device state and flow rate
             device_state = state.get("state", "idle")
-            command = state.get("command", "unknown")
+            flow_rate = state.get("flowRate")
 
-            # State mapping: "running" = open, "idle" = closed
-            if device_state == "running":
+            # Determine if valve is open based on device state and flow rate
+            # Valve is open if:
+            # 1. Device state is "running", OR
+            # 2. We have a valid flow rate > 0
+            is_valve_open = device_state == "running" or (
+                flow_rate is not None and flow_rate != "unknown" and flow_rate > 0
+            )
+
+            if is_valve_open:
                 self._attr_is_closed = False
                 self._attr_is_opening = False
                 self._attr_is_closing = False
-            else:  # "idle" or any other state
+            else:  # Valve is closed
                 self._attr_is_closed = True
                 self._attr_is_opening = False
                 self._attr_is_closing = False
 
-            # Update valve position (flow rate) - only when running
-            if device_state == "running":
-                # Get flow rate from API and map it to valve position (0-100%)
-                api_flow_rate = state.get("flowRate", 100)
-                self._attr_valve_position = api_flow_rate
-            # Don't reset position to 0 when stopped - keep last known position for next open
+            # Update valve position (flow rate)
+            if is_valve_open:
+                if flow_rate is not None and flow_rate != "unknown":
+                    # Get flow rate from API and map it to valve position (0-100%)
+                    self._attr_valve_position = int(flow_rate)
+                elif device_state == "running":
+                    # If device is running but no flow rate data, assume 100%
+                    self._attr_valve_position = 100
+                # If valve is open but no flow rate data, keep current position
+            elif not is_valve_open:
+                # When valve is closed, keep the last known position for next open
+                # Don't reset to 0 unless we explicitly want to close it
+                pass
 
             # Update temperature
             self._attr_temperature = state.get("temperature", 20.0)
@@ -141,15 +155,11 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             # Update extra state attributes
             self._attr_extra_state_attributes.update(
                 {
-                    "last_dispense_volume": state.get(
-                        "volume", 0
-                    ),  # Use 'volume' field from API
-                    "command": command,
-                    "device_state": device_state,
-                    "flow_rate": self._attr_valve_position,
-                    "temperature": self._attr_temperature,
-                    "preset_mode": self._attr_preset_mode,
                     "faucet_state": device_state,
+                    "preset_mode": self._attr_preset_mode,
+                    "is_valve_open": is_valve_open,
+                    "temperature": self._attr_temperature,
+                    "flow_rate": self._attr_valve_position,
                 }
             )
 

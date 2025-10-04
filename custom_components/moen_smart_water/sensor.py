@@ -227,12 +227,8 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
 
         # Operational sensors from device shadow
         if key == "faucet_state":
-            if state.get("command") == "run":
-                self._attr_native_value = "running"
-            elif state.get("command") == "stop":
-                self._attr_native_value = "stopped"
-            else:
-                self._attr_native_value = "idle"
+            # Use device state directly
+            self._attr_native_value = state.get("state", "idle")
         elif key == "last_dispense_volume":
             # Device shadow uses 'volume' field, not 'lastDispenseVolume'
             # Convert from μL to mL for better readability (divide by 1000)
@@ -244,9 +240,9 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
         elif key == "temperature":
             self._attr_native_value = state.get("temperature")
         elif key == "flow_rate":
-            # Flow rate might not be available in device shadow
-            # Set to None if not available
-            self._attr_native_value = state.get("flowRate")
+            # Handle "unknown" values by setting to None
+            flow_rate = state.get("flowRate")
+            self._attr_native_value = None if flow_rate == "unknown" else flow_rate
         elif key == "api_status":
             if shadow:
                 # Use actual API values for connected and state from shadow
