@@ -204,7 +204,7 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
         ]:
             self._attr_native_value = None
         elif description.key == "api_status":
-            self._attr_native_value = "checking"
+            self._attr_native_value = "Checking"
         else:
             self._attr_native_value = "loading"
 
@@ -214,7 +214,7 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
 
         if not shadow:
             if self.entity_description.key == "api_status":
-                self._attr_native_value = "no_data"
+                self._attr_native_value = "No Data"
             elif self.entity_description.key == "last_update":
                 self._attr_native_value = "failed"
             else:
