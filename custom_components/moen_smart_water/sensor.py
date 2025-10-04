@@ -200,12 +200,11 @@ class MoenSensor(CoordinatorEntity, SensorEntity):
             "wifi_rssi",
             "last_dispense_volume",
             "last_connect",
+            "last_update",
         ]:
             self._attr_native_value = None
         elif description.key == "api_status":
             self._attr_native_value = "checking"
-        elif description.key == "last_update":
-            self._attr_native_value = None
         else:
             self._attr_native_value = "loading"
 
