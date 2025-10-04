@@ -114,21 +114,22 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
         if shadow:
             state = shadow.get("state", {}).get("reported", {})
 
-            # Update valve state based on command
-            command = state.get("command", "stop")
+            # Update valve state based on device state
+            device_state = state.get("state", "idle")
+            command = state.get("command", "unknown")
 
-            # Simple state mapping: "run" = open, "stop" = closed
-            if command == "run":
+            # State mapping: "running" = open, "idle" = closed
+            if device_state == "running":
                 self._attr_is_closed = False
                 self._attr_is_opening = False
                 self._attr_is_closing = False
-            else:  # "stop" or any other command
+            else:  # "idle" or any other state
                 self._attr_is_closed = True
                 self._attr_is_opening = False
                 self._attr_is_closing = False
 
             # Update valve position (flow rate) - only when running
-            if command == "run":
+            if device_state == "running":
                 # Get flow rate from API and map it to valve position (0-100%)
                 api_flow_rate = state.get("flowRate", 100)
                 self._attr_valve_position = api_flow_rate
@@ -144,9 +145,11 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
                         "volume", 0
                     ),  # Use 'volume' field from API
                     "command": command,
+                    "device_state": device_state,
                     "flow_rate": self._attr_valve_position,
                     "temperature": self._attr_temperature,
-                    "faucet_state": "running" if command == "run" else "idle",
+                    "preset_mode": self._attr_preset_mode,
+                    "faucet_state": device_state,
                 }
             )
 
