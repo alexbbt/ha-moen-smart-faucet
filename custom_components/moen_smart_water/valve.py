@@ -205,6 +205,13 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             # Update valve position to reflect actual flow rate
             self._attr_valve_position = flow_rate
 
+            # Immediately update valve state to open
+            self._attr_is_closed = False
+            self._attr_is_opening = False
+            self._attr_is_closing = False
+            # Update Home Assistant state immediately
+            self.async_write_ha_state()
+
             # Trigger coordinator update to refresh state
             await self.coordinator.async_request_refresh()
             _LOGGER.info("Successfully opened valve for device %s", self._device_id)
@@ -224,6 +231,13 @@ class MoenFaucetValve(CoordinatorEntity, ValveEntity):
             await self.hass.async_add_executor_job(
                 self.coordinator.api.stop_water_flow, self._device_id
             )
+
+            # Immediately update valve state to closed
+            self._attr_is_closed = True
+            self._attr_is_opening = False
+            self._attr_is_closing = False
+            # Update Home Assistant state immediately
+            self.async_write_ha_state()
 
             # Trigger coordinator update to refresh state
             await self.coordinator.async_request_refresh()
